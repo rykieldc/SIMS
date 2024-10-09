@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">SIMS</string>
+    <string name="profile">Profile</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="notifications">Notifications</string>
+    <string name="settings">Settings</string>
+    <string name="sims_logo">SIMS Logo</string>
 </resources>
