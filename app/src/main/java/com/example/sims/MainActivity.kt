@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.dashboard -> {
                     replaceFragment(Dashboard())
+                    //replaceFragment(AdminDashboard())
                     true
                 }
 
@@ -53,6 +54,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         replaceFragment(Dashboard())
+        //replaceFragment(AdminDashboard())
     }
 
     private fun replaceFragment(fragment: Fragment){

@@ -6,203 +6,203 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".Dashboard">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/bg_gradient" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_gradient" />
 
-        <!-- Header -->
-        <TextView
-            android:id="@+id/header_dashboard"
-            android:layout_width="match_parent"
+    <!-- Header -->
+    <TextView
+        android:id="@+id/header_dashboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="64dp"
+        android:fontFamily="@font/poppins_black"
+        android:text="@string/greetings"
+        android:textColor="@color/primary_color"
+        android:textSize="32sp"
+        android:textStyle="bold" />
+
+    <GridLayout
+        android:id="@+id/grid_layout"
+        android:layout_width="350dp"
+        android:layout_height="550dp"
+        android:layout_below="@id/header_dashboard"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:columnCount="2"
+        android:rowCount="2"
+        tools:ignore="TextSizeCheck">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvViewItem"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="64dp"
-            android:fontFamily="@font/poppins_black"
-            android:text="@string/greetings"
-            android:textColor="@color/primary_color"
-            android:textSize="32sp"
-            android:textStyle="bold" />
+            android:layout_row="0"
+            android:layout_rowWeight="1"
+            android:layout_column="0"
+            android:layout_columnWeight="1"
+            android:layout_margin="10dp"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="12dp">
 
-        <GridLayout
-            android:id="@+id/grid_layout"
-            android:layout_width="350dp"
-            android:layout_height="550dp"
-            android:layout_below="@id/header_dashboard"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="16dp"
-            android:columnCount="2"
-            android:rowCount="2"
-            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                tools:ignore="UseCompoundDrawables">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cvViewItem"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_row="0"
-                android:layout_rowWeight="1"
-                android:layout_column="0"
-                android:layout_columnWeight="1"
-                android:layout_margin="10dp"
-                app:cardCornerRadius="15dp"
-                app:cardElevation="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                <ImageView
+                    android:layout_width="120dp"
+                    android:layout_height="130dp"
                     android:layout_gravity="center"
-                    android:orientation="vertical"
-                    tools:ignore="UseCompoundDrawables">
+                    android:layout_marginTop="20dp"
+                    android:contentDescription="@string/view_items"
+                    android:src="@drawable/ic_view" />
 
-                    <ImageView
-                        android:layout_width="120dp"
-                        android:layout_height="130dp"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="20dp"
-                        android:contentDescription="@string/view_items"
-                        android:src="@drawable/ic_view" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:text="@string/view_items"
-                        android:textColor="@color/red"
-                        android:textSize="25sp"
-                        android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/view_items"
+                    android:textColor="@color/red"
+                    android:textSize="25sp"
+                    android:textStyle="bold" />
 
 
-                </LinearLayout>
+            </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cvAddItem"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_row="0"
-                android:layout_rowWeight="1"
-                android:layout_column="1"
-                android:layout_columnWeight="1"
-                android:layout_margin="10dp"
-                app:cardCornerRadius="15dp"
-                app:cardElevation="12dp">
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvAddItem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_row="0"
+            android:layout_rowWeight="1"
+            android:layout_column="1"
+            android:layout_columnWeight="1"
+            android:layout_margin="10dp"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="12dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:contentDescription="@string/add_item"
+                android:orientation="vertical"
+                tools:ignore="UseCompoundDrawables">
+
+                <ImageView
+                    android:layout_width="120dp"
+                    android:layout_height="130dp"
                     android:layout_gravity="center"
+                    android:layout_marginTop="20dp"
                     android:contentDescription="@string/add_item"
-                    android:orientation="vertical"
-                    tools:ignore="UseCompoundDrawables">
+                    android:src="@drawable/ic_add" />
 
-                    <ImageView
-                        android:layout_width="120dp"
-                        android:layout_height="130dp"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="20dp"
-                        android:contentDescription="@string/add_item"
-                        android:src="@drawable/ic_add" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:text="@string/add_item"
-                        android:textColor="@color/red"
-                        android:textSize="25sp"
-                        android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/add_item"
+                    android:textColor="@color/red"
+                    android:textSize="25sp"
+                    android:textStyle="bold" />
 
 
-                </LinearLayout>
+            </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cvEditItem"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_row="1"
-                android:layout_rowWeight="1"
-                android:layout_column="0"
-                android:layout_columnWeight="1"
-                android:layout_margin="10dp"
-                app:cardCornerRadius="15dp"
-                app:cardElevation="12dp">
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvEditItem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_row="1"
+            android:layout_rowWeight="1"
+            android:layout_column="0"
+            android:layout_columnWeight="1"
+            android:layout_margin="10dp"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="12dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                tools:ignore="UseCompoundDrawables">
+
+                <ImageView
+                    android:layout_width="120dp"
+                    android:layout_height="130dp"
                     android:layout_gravity="center"
-                    android:orientation="vertical"
-                    tools:ignore="UseCompoundDrawables">
+                    android:layout_marginTop="40dp"
+                    android:contentDescription="@string/edit_item"
+                    android:src="@drawable/ic_edit" />
 
-                    <ImageView
-                        android:layout_width="120dp"
-                        android:layout_height="130dp"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="40dp"
-                        android:contentDescription="@string/edit_item"
-                        android:src="@drawable/ic_edit" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:text="@string/edit_item"
-                        android:textColor="@color/red"
-                        android:textSize="25sp"
-                        android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/edit_item"
+                    android:textColor="@color/red"
+                    android:textSize="25sp"
+                    android:textStyle="bold" />
 
 
-                </LinearLayout>
+            </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cvDeleteItem"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_row="1"
-                android:layout_rowWeight="1"
-                android:layout_column="1"
-                android:layout_columnWeight="1"
-                android:layout_margin="10dp"
-                app:cardCornerRadius="15dp"
-                app:cardElevation="12dp">
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvDeleteItem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_row="1"
+            android:layout_rowWeight="1"
+            android:layout_column="1"
+            android:layout_columnWeight="1"
+            android:layout_margin="10dp"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="12dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                tools:ignore="UseCompoundDrawables">
+
+                <ImageView
+                    android:layout_width="120dp"
+                    android:layout_height="130dp"
                     android:layout_gravity="center"
-                    android:orientation="vertical"
-                    tools:ignore="UseCompoundDrawables">
+                    android:layout_marginTop="38dp"
+                    android:contentDescription="@string/delete_item"
+                    android:src="@drawable/ic_delete" />
 
-                    <ImageView
-                        android:layout_width="120dp"
-                        android:layout_height="130dp"
-                        android:layout_marginTop="38dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="@string/delete_item"
-                        android:src="@drawable/ic_delete" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/delete_item"
+                    android:textColor="@color/red"
+                    android:textSize="25sp"
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:text="@string/delete_item"
-                        android:textColor="@color/red"
-                        android:textSize="25sp"
-
-                        android:textStyle="bold" />
+                    android:textStyle="bold" />
 
 
-                </LinearLayout>
+            </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        </GridLayout>
+    </GridLayout>
 
 
 </RelativeLayout>
