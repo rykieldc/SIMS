@@ -5,7 +5,7 @@
     <string name="notifications">Notifications</string>
     <string name="settings">Settings</string>
     <string name="sims_logo">SIMS Logo</string>
-    <string name="header_product">Product</string>
+    <string name="header_product">Products</string>
     <string name="search">Search Product</string>
     <string name="ic_filter">Filter Icon</string>
     <string name="ic_search">Search Icon</string>
@@ -48,4 +48,16 @@
     <string name="user01">user01</string>
     <string name="user">User</string>
     <string name="role">Role</string>
+    <string name="item_image">Item Image</string>
+    <string name="stock_count">500 units</string>
+    <string name="sample_code">ABC-123</string>
+    <string name="sample_name">Syringes (5mL)</string>
+    <string name="sample_category"><![CDATA[Syringes & Needles]]></string>
+    <string name="sample_location">Storage Room 1</string>
+    <string name="sample_supplier">QuickMed</string>
+    <string name="sample_date_added">10/01/24</string>
+    <string name="sample_last_restock_date">10/13/24</string>
+    <string name="item_details">Item Details</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 </resources>

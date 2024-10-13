@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
+    <color name="black">#1E1E1E</color>
     <color name="white">#F4EDED</color>
     <color name="red">#EFE03C3C</color>
     <color name="lightred">#F17878</color>
@@ -14,6 +14,7 @@
     <color name="active_indicator">#56E5A9A9</color>
     <color name="save_color">#3CC742</color>
     <color name="cancel_color">#C73C3C</color>
+    <color name="edit_color">#FF9800</color>
     <color name="divider_color">#D05E67</color>
     <color name="profile_color">#CD7077</color>
 </resources>

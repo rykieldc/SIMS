@@ -8,7 +8,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/bg_gradient"
-    tools:context=".EditItemActivity">
+    tools:context=".ViewItemDetailsActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,7 +23,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="32dp"
             android:fontFamily="@font/poppins_black"
-            android:text="@string/edit_item"
+            android:text="@string/item_details"
             android:textColor="@color/primary_color"
             android:textSize="32sp"
             android:textStyle="bold"/>
@@ -44,52 +44,50 @@
                 android:layout_gravity="center_horizontal"
                 android:background="@drawable/bg_items"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="20dp"
+                android:clipToPadding="false"
+                android:clipChildren="false">
 
                 <ImageView
-                    android:id="@+id/editImg"
+                    android:id="@+id/itemImg"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
-                    android:contentDescription="@string/edit_image"
+                    android:contentDescription="@string/item_image"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/ic_upload_img"
+                    android:src="@drawable/sims_logo"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="ImageContrastCheck" />
 
-                <EditText
-                    android:id="@+id/editName"
+                <TextView
+                    android:id="@+id/itemName"
                     android:layout_width="250dp"
                     android:layout_height="63dp"
-                    android:autofillHints="productName"
-                    android:background="@drawable/bg_fields"
-                    android:gravity="start|center_vertical"
-                    android:hint="@string/product_name"
-                    android:inputType="text"
+                    android:gravity="center|center_horizontal"
                     android:maxWidth="400dp"
-                    android:padding="16dp"
+                    android:padding="8dp"
+                    android:text="@string/sample_name"
                     android:textColor="@color/black"
-                    android:textColorHint="#757575"
+                    android:textSize="22sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/editImg" />
+                    app:layout_constraintTop_toBottomOf="@+id/itemImg" />
 
-                <EditText
-                    android:id="@+id/editUnits"
-                    android:layout_width="100dp"
-                    android:layout_height="50dp"
+                <TextView
+                    android:id="@+id/itemUnits"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
-                    android:autofillHints="units"
-                    android:background="@drawable/bg_fields"
-                    android:gravity="start|center_vertical"
-                    android:hint="@string/units"
-                    android:inputType="number"
+                    android:background="@drawable/bg_units"
+                    android:gravity="center"
                     android:padding="5dp"
-                    android:textColor="@color/black"
-                    android:textColorHint="#757575"
+                    android:text="@string/stock_count"
+                    android:textColor="#33691E"
+                    android:textSize="11sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/editName" />
+                    app:layout_constraintTop_toBottomOf="@+id/itemName" />
 
                 <TextView
                     android:id="@+id/itemDescription"
@@ -101,7 +99,7 @@
                     android:textSize="20sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/editUnits" />
+                    app:layout_constraintTop_toBottomOf="@+id/itemUnits" />
 
                 <TextView
                     android:id="@+id/descCode"
@@ -114,7 +112,7 @@
                     android:textAllCaps="true"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="@+id/editCode"
+                    app:layout_constraintBottom_toBottomOf="@+id/itemCode"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/itemDescription"
                     app:layout_constraintVertical_bias="0.437" />
@@ -130,7 +128,7 @@
                     android:textAllCaps="true"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="@+id/editCategory"
+                    app:layout_constraintBottom_toBottomOf="@+id/itemCategory"
                     app:layout_constraintEnd_toEndOf="@+id/descCode"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
@@ -148,7 +146,7 @@
                     android:textAllCaps="true"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="@+id/editLocation"
+                    app:layout_constraintBottom_toBottomOf="@+id/itemLocation"
                     app:layout_constraintEnd_toEndOf="@+id/descCode"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
@@ -166,7 +164,7 @@
                     android:textAllCaps="true"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="@+id/editSupplier"
+                    app:layout_constraintBottom_toBottomOf="@+id/itemSupplier"
                     app:layout_constraintEnd_toEndOf="@+id/descCode"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
@@ -184,7 +182,7 @@
                     android:textAllCaps="true"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="@+id/editDateAdded"
+                    app:layout_constraintBottom_toBottomOf="@+id/itemDateAdded"
                     app:layout_constraintEnd_toEndOf="@+id/descCode"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
@@ -203,165 +201,145 @@
                     android:textAllCaps="true"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="@+id/editLastRestocked"
+                    app:layout_constraintBottom_toBottomOf="@+id/itemLastRestocked"
                     app:layout_constraintEnd_toEndOf="@+id/descCode"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/itemDescription"
                     app:layout_constraintVertical_bias="1.0" />
 
-                <EditText
-                    android:id="@+id/editCode"
+                <TextView
+                    android:id="@+id/itemCode"
                     android:layout_width="200dp"
                     android:layout_height="50dp"
                     android:layout_marginStart="24dp"
                     android:layout_marginTop="4dp"
-                    android:autofillHints="productCode"
                     android:background="@drawable/bg_fields"
-                    android:gravity="start|center_vertical"
-                    android:hint="@string/product_code"
-                    android:inputType="text"
+                    android:gravity="center"
                     android:maxWidth="400dp"
                     android:padding="5dp"
+                    android:text="@string/sample_code"
                     android:textColor="@color/black"
-                    android:textColorHint="#757575"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/descCode"
                     app:layout_constraintTop_toBottomOf="@+id/itemDescription" />
 
-                <EditText
-                    android:id="@+id/editCategory"
+                <TextView
+                    android:id="@+id/itemCategory"
                     android:layout_width="200dp"
                     android:layout_height="50dp"
                     android:layout_marginStart="24dp"
                     android:layout_marginTop="5dp"
-                    android:autofillHints="productCategory"
                     android:background="@drawable/bg_fields"
-                    android:gravity="start|center_vertical"
-                    android:hint="@string/product_category"
-                    android:inputType="text"
+                    android:gravity="center"
+                    android:text="@string/sample_category"
                     android:maxWidth="400dp"
                     android:padding="5dp"
                     android:textColor="@color/black"
-                    android:textColorHint="#757575"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/descCategory"
-                    app:layout_constraintTop_toBottomOf="@+id/editCode" />
+                    app:layout_constraintTop_toBottomOf="@+id/itemCode" />
 
-                <EditText
-                    android:id="@+id/editLocation"
+                <TextView
+                    android:id="@+id/itemLocation"
                     android:layout_width="200dp"
                     android:layout_height="50dp"
                     android:layout_marginStart="24dp"
                     android:layout_marginTop="5dp"
-                    android:autofillHints="productCategory"
                     android:background="@drawable/bg_fields"
-                    android:gravity="start|center_vertical"
-                    android:hint="@string/location"
-                    android:inputType="text"
+                    android:gravity="center"
+                    android:text="@string/sample_location"
                     android:maxWidth="400dp"
                     android:padding="5dp"
                     android:textColor="@color/black"
-                    android:textColorHint="#757575"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/descCategory"
-                    app:layout_constraintTop_toBottomOf="@+id/editCategory" />
+                    app:layout_constraintTop_toBottomOf="@+id/itemCategory" />
 
-                <EditText
-                    android:id="@+id/editSupplier"
+                <TextView
+                    android:id="@+id/itemSupplier"
                     android:layout_width="200dp"
                     android:layout_height="50dp"
                     android:layout_marginStart="24dp"
                     android:layout_marginTop="5dp"
-                    android:autofillHints="productCategory"
                     android:background="@drawable/bg_fields"
-                    android:gravity="start|center_vertical"
-                    android:hint="@string/supplier_name"
-                    android:inputType="text"
+                    android:gravity="center"
+                    android:text="@string/sample_supplier"
                     android:maxWidth="400dp"
                     android:padding="5dp"
                     android:textColor="@color/black"
-                    android:textColorHint="#757575"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/descLocation"
-                    app:layout_constraintTop_toBottomOf="@+id/editLocation" />
+                    app:layout_constraintTop_toBottomOf="@+id/itemLocation" />
 
-                <EditText
-                    android:id="@+id/editDateAdded"
+                <TextView
+                    android:id="@+id/itemDateAdded"
                     android:layout_width="200dp"
                     android:layout_height="50dp"
                     android:layout_marginStart="24dp"
                     android:layout_marginTop="5dp"
-                    android:autofillHints="productCategory"
                     android:background="@drawable/bg_fields"
-                    android:gravity="start|center_vertical"
-                    android:hint="@string/date_added"
-                    android:inputType="date"
+                    android:gravity="center"
+                    android:text="@string/sample_date_added"
                     android:maxWidth="400dp"
                     android:padding="5dp"
                     android:textColor="@color/black"
-                    android:textColorHint="#757575"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/descSupplier"
-                    app:layout_constraintTop_toBottomOf="@+id/editSupplier" />
+                    app:layout_constraintTop_toBottomOf="@+id/itemSupplier" />
 
-                <EditText
-                    android:id="@+id/editLastRestocked"
+                <TextView
+                    android:id="@+id/itemLastRestocked"
                     android:layout_width="200dp"
                     android:layout_height="50dp"
                     android:layout_marginStart="24dp"
                     android:layout_marginTop="5dp"
-                    android:autofillHints="productCategory"
                     android:background="@drawable/bg_fields"
-                    android:gravity="start|center_vertical"
-                    android:hint="@string/last_restocked"
-                    android:inputType="date"
+                    android:gravity="center"
+                    android:text="@string/sample_last_restock_date"
                     android:maxWidth="400dp"
                     android:padding="5dp"
                     android:textColor="@color/black"
                     android:textColorHint="#757575"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/descDateAdded"
-                    app:layout_constraintTop_toBottomOf="@+id/editDateAdded" />
+                    app:layout_constraintTop_toBottomOf="@+id/itemDateAdded" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"
-                    android:layout_marginBottom="32dp"
+                    android:orientation="vertical"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/editLastRestocked">
+
+                    app:layout_constraintTop_toBottomOf="@+id/itemLastRestocked">
 
                     <Button
-                        android:id="@+id/saveBtn"
+                        android:id="@+id/editBtn"
                         android:layout_width="130dp"
                         android:layout_height="wrap_content"
-                        android:backgroundTint="@color/save_color"
+                        android:backgroundTint="#FF9800"
                         android:fontFamily="@font/poppins_black"
-                        android:text="@string/save"
+                        android:text="@string/edit"
                         android:textAllCaps="true"
                         android:textStyle="bold"
                         app:cornerRadius="10dp"
-                        app:icon="@drawable/ic_save"
+                        app:icon="@drawable/ic_edit_changes"
                         app:iconPadding="0dp"
-                        tools:ignore="ButtonStyle,TextContrastCheck"
-                        tools:layout_editor_absoluteY="731dp" />
+                        tools:ignore="ButtonStyle,TextContrastCheck" />
 
                     <Button
-                        android:id="@+id/cancelBtn"
+                        android:id="@+id/deleteBtn"
                         android:layout_width="130dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="24dp"
                         android:fontFamily="@font/poppins_black"
-                        android:text="@string/cancel"
+                        android:text="@string/delete"
                         android:textAllCaps="true"
                         android:textStyle="bold"
                         app:cornerRadius="10dp"
-                        app:icon="@drawable/ic_xmark_circle"
+                        app:icon="@drawable/ic_delete_changes"
                         app:iconPadding="0dp"
-                        tools:ignore="ButtonStyle,TextContrastCheck"
-                        tools:layout_editor_absoluteY="728dp" />
+                        tools:ignore="ButtonStyle,TextContrastCheck" />
 
                 </LinearLayout>
 
