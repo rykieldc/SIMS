@@ -4,10 +4,8 @@ import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.method.LinkMovementMethod
-import android.text.style.ClickableSpan
 import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
-import android.view.View
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -52,11 +50,4 @@ class ChangePasswordActivity : AppCompatActivity() {
             insets
         }
     }
-
-    class DrawableClickSpan(private val clickListener: () -> Unit) : ClickableSpan() {
-        override fun onClick(widget: View) {
-            clickListener()
-        }
-    }
-
 }
