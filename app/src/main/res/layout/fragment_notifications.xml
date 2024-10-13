@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".UserLogsActivity"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Notifications"
     android:background="@drawable/bg_gradient">
 
     <ScrollView
@@ -33,7 +31,7 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="32dp"
                     android:fontFamily="@font/poppins_black"
-                    android:text="@string/user_activity_log"
+                    android:text="@string/notifications"
                     android:textColor="@color/primary_color"
                     android:textSize="34sp"
                     android:textStyle="bold"
@@ -80,13 +78,13 @@
                 </LinearLayout>
 
                 <ImageView
-                    android:id="@+id/calendarBtn"
+                    android:id="@+id/filterBtn"
                     android:layout_width="46dp"
                     android:layout_height="48dp"
                     android:background="@drawable/bg_button"
-                    android:contentDescription="@string/calendar_icon"
+                    android:contentDescription="@string/ic_filter"
                     android:padding="6dp"
-                    app:srcCompat="@drawable/ic_calendar" />
+                    app:srcCompat="@drawable/ic_filter" />
 
             </LinearLayout>
 
@@ -100,124 +98,202 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="8dp"
-                android:padding="8dp">
+                >
 
                 <TableRow
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                     <TextView
-                        android:text="@string/date"
+                        android:text="@string/today"
                         android:textAllCaps="true"
                         android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/primary_color"
-                        android:textStyle="bold"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.5"
-                        android:padding="6dp" />
-
-                    <TextView
-                        android:text="@string/name"
-                        android:textAllCaps="true"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/primary_color"
+                        android:textColor="#C62828"
                         android:textStyle="bold"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:layout_marginStart="4dp"
                         android:padding="6dp" />
-
-
-                    <TextView
-                        android:text="@string/action"
-                        android:textAllCaps="true"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/primary_color"
-                        android:gravity="center"
-                        android:textStyle="bold"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1.2"
-                        android:padding="6dp" />
-
                 </TableRow>
 
                 <TableRow
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/gr_lower">
+                    android:background="#55E5CB1E">
 
                     <TextView
-                        android:text="@string/sample_last_restock_date"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/black"
-                        android:layout_width="0dp"
-                        android:layout_height="50dp"
-                        android:layout_weight="0.5"
-                        android:padding="6dp"
-                        android:gravity="center_vertical"/>
-
-                    <TextView
-                        android:text="@string/user_name"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/black"
-                        android:layout_width="0dp"
-                        android:layout_height="50dp"
-                        android:layout_weight="1"
-                        android:padding="6dp"
-                        android:gravity="start|center_vertical"/>
-
-                    <TextView
-                        android:text="@string/sample_log"
+                        android:text="@string/sample_notif"
                         android:fontFamily="@font/poppins_bold"
                         android:textColor="@color/black"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1.2"
+                        android:layout_weight="1"
                         android:padding="6dp"
-                        android:gravity="start|center_vertical"/>
+                        android:gravity="center_vertical"
+                        app:drawableStartCompat="@drawable/ic_important"
+                        android:drawablePadding="8dp"/>
                 </TableRow>
 
                 <TableRow
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/gr_upper"
+                    android:background="#20E5CB1E"
                     >
 
                     <TextView
-                        android:text="@string/sample_date_added"
+                        android:text="@string/sample_notif2"
                         android:fontFamily="@font/poppins_bold"
                         android:textColor="@color/black"
                         android:layout_width="0dp"
-                        android:layout_height="50dp"
-                        android:layout_weight="0.5"
-                        android:padding="6dp"
-                        android:gravity="center_vertical"/>
-
-                    <TextView
-                        android:text="@string/user_name"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/black"
-                        android:layout_width="0dp"
-                        android:layout_height="50dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:padding="6dp"
-                        android:gravity="start|center_vertical"/>
+                        android:gravity="center_vertical"
+                        app:drawableStartCompat="@drawable/ic_important"
+                        android:drawablePadding="8dp"/>
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#55E51E1E"
+                    >
+
+                    <TextView
+                        android:text="@string/sample_notif3"
+                        android:fontFamily="@font/poppins_bold"
+                        android:textColor="@color/black"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="6dp"
+                        android:gravity="center_vertical"
+                        app:drawableStartCompat="@drawable/ic_high_priority"
+                        android:drawablePadding="10dp"/>
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#55E51E1E"
+                    >
+
+                    <TextView
+                        android:text="@string/sample_notif4"
+                        android:fontFamily="@font/poppins_bold"
+                        android:textColor="@color/black"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="6dp"
+                        android:gravity="center_vertical"
+                        app:drawableStartCompat="@drawable/ic_high_priority"
+                        android:drawablePadding="10dp"/>
+                </TableRow>
+            </TableLayout>
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="8dp"
+                >
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1.2"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1"
                         android:fontFamily="@font/poppins_bold"
-                        android:gravity="start|center_vertical"
                         android:padding="6dp"
-                        android:text="@string/sample_log2"
-                        android:textColor="@color/black" />
+                        android:text="@string/yesterday"
+                        android:textAllCaps="true"
+                        android:textColor="#C62828"
+                        android:textStyle="bold" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#20E5CB1E">
+
+                    <TextView
+                        android:text="@string/sample_notif"
+                        android:fontFamily="@font/poppins_bold"
+                        android:textColor="@color/black"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="6dp"
+                        android:gravity="center_vertical"
+                        app:drawableStartCompat="@drawable/ic_important"
+                        android:drawablePadding="8dp"/>
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#20E5CB1E"
+                    >
+
+                    <TextView
+                        android:text="@string/sample_notif2"
+                        android:fontFamily="@font/poppins_bold"
+                        android:textColor="@color/black"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="6dp"
+                        android:gravity="center_vertical"
+                        app:drawableStartCompat="@drawable/ic_important"
+                        android:drawablePadding="8dp"/>
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#20E51E1E"
+                    >
+
+                    <TextView
+                        android:text="@string/sample_notif3"
+                        android:fontFamily="@font/poppins_bold"
+                        android:textColor="@color/black"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="6dp"
+                        android:gravity="center_vertical"
+                        app:drawableStartCompat="@drawable/ic_high_priority"
+                        android:drawablePadding="10dp"/>
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#20E51E1E"
+                    >
+
+                    <TextView
+                        android:text="@string/sample_notif4"
+                        android:fontFamily="@font/poppins_bold"
+                        android:textColor="@color/black"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="6dp"
+                        android:gravity="center_vertical"
+                        app:drawableStartCompat="@drawable/ic_high_priority"
+                        android:drawablePadding="10dp"/>
                 </TableRow>
             </TableLayout>
 
         </LinearLayout>
     </ScrollView>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -88,4 +88,10 @@
     <string name="date">Date</string>
     <string name="sample_log">Edited item [Mediheal - Pulse Oximeter]</string>
     <string name="sample_log2">Added new item - [Mediheal - Pulse Oximeter]</string>
+    <string name="today">Today</string>
+    <string name="sample_notif">Stocks for [TopCare - Sterile Gauze Pads (10x10cm)] is low. Stocks left: [35]</string>
+    <string name="sample_notif2">Stocks for [Betadine - Povidone-Iodine 10% (250ml)] is low. Stocks left: [20]</string>
+    <string name="sample_notif3">Stocks for [GreenCross - Isopropyl Alcohol 70% (500ml)] is very low. Stocks left: [2]</string>
+    <string name="sample_notif4">Stocks for [GreenCross - Hand Sanitizer (300ml)] is very low. Stocks left: [1]</string>
+    <string name="yesterday">Yesterday</string>
 </resources>
