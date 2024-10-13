@@ -15,11 +15,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-class DrawableClickSpan(private val clickListener: () -> Unit) : ClickableSpan() {
-    override fun onClick(widget: View) {
-        clickListener()
-    }
-}
 
 class AddItemActivity : AppCompatActivity() {
     private lateinit var headerProduct: TextView
@@ -57,4 +52,11 @@ class AddItemActivity : AppCompatActivity() {
             insets
         }
     }
+
+    class DrawableClickSpan(private val clickListener: () -> Unit) : ClickableSpan() {
+        override fun onClick(widget: View) {
+            clickListener()
+        }
+    }
+
 }
