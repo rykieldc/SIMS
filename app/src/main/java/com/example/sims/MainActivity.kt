@@ -31,8 +31,8 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.dashboard -> {
-                    replaceFragment(Dashboard())
-                    //replaceFragment(AdminDashboard())
+                    //replaceFragment(Dashboard())
+                    replaceFragment(AdminDashboard())
                     true
                 }
 
@@ -53,8 +53,8 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
-        replaceFragment(Dashboard())
-        //replaceFragment(AdminDashboard())
+        //replaceFragment(Dashboard())
+        replaceFragment(AdminDashboard())
     }
 
     private fun replaceFragment(fragment: Fragment){

@@ -25,6 +25,7 @@ class AdminDashboard : Fragment() {
         val editItemCardView = view.findViewById<CardView>(R.id.cvEditItem)
         val viewItemCardView = view.findViewById<CardView>(R.id.cvViewItem)
         val deleteItemCardView = view.findViewById<CardView>(R.id.cvDeleteItem)
+        val manageUsersCardView = view.findViewById<CardView>(R.id.cvManageUsers)
 
 
         addItemCardView.setOnClickListener {
@@ -46,5 +47,11 @@ class AdminDashboard : Fragment() {
             val intent = Intent(requireContext(), ViewItemDetailsActivity::class.java)
             startActivity(intent)
         }
+
+        manageUsersCardView.setOnClickListener {
+            val intent = Intent(requireContext(), ManageUsersActivity::class.java)
+            startActivity(intent)
+        }
+
     }
 }
