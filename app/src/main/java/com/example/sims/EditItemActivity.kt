@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.sims.AddItemActivity.DrawableClickSpan
+
 
 class EditItemActivity : AppCompatActivity() {
     private lateinit var headerProduct: TextView
