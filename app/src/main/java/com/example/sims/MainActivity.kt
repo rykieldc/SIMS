@@ -33,7 +33,8 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.dashboard -> {
-                    TODO("Add Dashboard Fragment")
+                    replaceFragment(Dashboard())
+                    true
                 }
 
                 R.id.notifications -> {
@@ -52,7 +53,7 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
-        replaceFragment(ProfilePage())
+        replaceFragment(Dashboard())
     }
 
     private fun replaceFragment(fragment: Fragment){
