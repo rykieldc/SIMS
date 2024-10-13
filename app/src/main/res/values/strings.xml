@@ -11,4 +11,9 @@
     <string name="ic_search">Search Icon</string>
     <string name="product_category">Product Category</string>
     <string name="see_all"><![CDATA[See all >>]]></string>
+    <string name="ic_back_arrow">Back Arrow Icon</string>
+    <string name="product_card">Product Card</string>
+    <string name="supplier_name">Supplier Name</string>
+    <string name="product_name">Product Name</string>
+    <string name="units"># Units</string>
 </resources>
