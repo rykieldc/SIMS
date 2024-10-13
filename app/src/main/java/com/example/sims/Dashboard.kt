@@ -22,9 +22,15 @@ class Dashboard : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val addItemCardView = view.findViewById<CardView>(R.id.cvAddItem)
+        val editItemCardView = view.findViewById<CardView>(R.id.cvEditItem)
 
         addItemCardView.setOnClickListener {
             val intent = Intent(requireContext(), AddItemActivity::class.java)
+            startActivity(intent)
+        }
+
+        editItemCardView.setOnClickListener {
+            val intent = Intent(requireContext(), EditItemActivity::class.java)
             startActivity(intent)
         }
     }
