@@ -16,4 +16,22 @@
     <string name="supplier_name">Supplier Name</string>
     <string name="product_name">Product Name</string>
     <string name="units"># Units</string>
+    <string name="saving">Saving…</string>
+    <string name="add_item">Add Item</string>
+    <string name="ic_upload_img">Upload Image Icon</string>
+    <string name="item_description">Item Description</string>
+    <string name="code">Code</string>
+    <string name="product_code">Product Code</string>
+    <string name="category">Category</string>
+    <string name="location">Location</string>
+    <string name="supplier">Supplier</string>
+    <string name="date_added">Date Added</string>
+    <string name="last_restocked">Last Restocked</string>
+    <string name="last__restocked">Last\nRestocked</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="view_items">View Items</string>
+    <string name="edit_item">Edit Item</string>
+    <string name="delete_item">Delete Item</string>
+    <string name="greetings">Hello, User01!</string>
 </resources>

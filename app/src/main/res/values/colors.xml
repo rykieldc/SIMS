@@ -12,4 +12,6 @@
     <color name="primary_variant">#CC4F58</color>
     <color name="accent_color">#DC868E</color>
     <color name="active_indicator">#56E5A9A9</color>
+    <color name="save_color">#3CC742</color>
+    <color name="cancel_color">#C73C3C</color>
 </resources>

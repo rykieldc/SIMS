@@ -12,11 +12,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SIMS"
         tools:targetApi="31">
-
+        <activity
+            android:name=".AddItemActivity"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
-            android:theme="@style/Theme.App.SplashScreen"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.App.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
