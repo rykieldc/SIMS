@@ -14,4 +14,6 @@
     <color name="active_indicator">#56E5A9A9</color>
     <color name="save_color">#3CC742</color>
     <color name="cancel_color">#C73C3C</color>
+    <color name="divider_color">#D05E67</color>
+    <color name="profile_color">#CD7077</color>
 </resources>
