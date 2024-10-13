@@ -60,4 +60,12 @@
     <string name="item_details">Item Details</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="account">Account</string>
+    <string name="change_password">Change Password</string>
+    <string name="logout">Logout</string>
+    <string name="about">About</string>
+    <string name="sanvicare">Sanvicare</string>
+    <string name="current_password">Current Password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_new_password">Confirm New Password</string>
 </resources>
