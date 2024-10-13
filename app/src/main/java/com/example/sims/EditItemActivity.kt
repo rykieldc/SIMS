@@ -14,15 +14,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.sims.AddItemActivity.DrawableClickSpan
 
-
-class AddItemActivity : AppCompatActivity() {
+class EditItemActivity : AppCompatActivity() {
     private lateinit var headerProduct: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_add_item)
+        setContentView(R.layout.activity_edit_item)
 
         headerProduct = findViewById(R.id.header_product)
 
@@ -58,5 +58,4 @@ class AddItemActivity : AppCompatActivity() {
             clickListener()
         }
     }
-
 }
