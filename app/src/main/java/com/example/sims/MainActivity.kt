@@ -45,7 +45,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.settings -> {
-                    TODO("Add Settings Fragment")
+                    replaceFragment(Settings())
+                    true
                 }
 
                 else -> false
