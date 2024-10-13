@@ -9,18 +9,31 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/background_gradient" />
+            android:background="@drawable/bg_gradient" />
+
+        <!-- Header -->
+        <TextView
+            android:id="@+id/header_dashboard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="64dp"
+            android:fontFamily="@font/poppins_black"
+            android:text="@string/greetings"
+            android:textColor="@color/primary_color"
+            android:textSize="32sp"
+            android:textStyle="bold" />
 
         <GridLayout
             android:id="@+id/grid_layout"
             android:layout_width="350dp"
             android:layout_height="550dp"
-            android:layout_centerInParent="true"
+            android:layout_below="@id/header_dashboard"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp"
             android:columnCount="2"
             android:rowCount="2"
             >
-
-
 
             <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"
@@ -45,13 +58,14 @@
                         android:layout_height="130dp"
                         android:layout_gravity="center"
                         android:layout_marginTop="20dp"
+                        android:contentDescription="@string/view_items"
                         android:src="@drawable/ic_view" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
-                        android:text="View Items"
+                        android:text="@string/view_items"
                         android:textColor="@color/red"
                         android:textSize="25sp"
                         android:textStyle="bold" />
@@ -63,6 +77,7 @@
 
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/cvAddItem"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_row="0"
@@ -77,20 +92,23 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
-                    android:orientation="vertical">
+                    android:contentDescription="@string/add_item"
+                    android:orientation="vertical"
+                    tools:ignore="UseCompoundDrawables">
 
                     <ImageView
                         android:layout_width="120dp"
                         android:layout_height="130dp"
                         android:layout_gravity="center"
                         android:layout_marginTop="20dp"
+                        android:contentDescription="@string/add_item"
                         android:src="@drawable/ic_add" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
-                        android:text="Add Item"
+                        android:text="@string/add_item"
                         android:textColor="@color/red"
                         android:textSize="25sp"
                         android:textStyle="bold" />
@@ -115,20 +133,22 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    tools:ignore="UseCompoundDrawables">
 
                     <ImageView
                         android:layout_width="120dp"
                         android:layout_height="130dp"
                         android:layout_gravity="center"
                         android:layout_marginTop="40dp"
+                        android:contentDescription="@string/edit_item"
                         android:src="@drawable/ic_edit" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
-                        android:text="Edit Item"
+                        android:text="@string/edit_item"
                         android:textColor="@color/red"
                         android:textSize="25sp"
                         android:textStyle="bold" />
@@ -153,20 +173,22 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    tools:ignore="UseCompoundDrawables">
 
                     <ImageView
                         android:layout_width="120dp"
                         android:layout_height="130dp"
                         android:layout_marginTop="38dp"
                         android:layout_gravity="center"
+                        android:contentDescription="@string/delete_item"
                         android:src="@drawable/ic_delete" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
-                        android:text="Delete Item"
+                        android:text="@string/delete_item"
                         android:textColor="@color/red"
                         android:textSize="25sp"
 
