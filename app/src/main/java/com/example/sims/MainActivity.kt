@@ -37,7 +37,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.notifications -> {
-                    TODO("Add Notifications Fragment")
+                    replaceFragment(Notifications())
+                    true
                 }
 
                 R.id.profile -> {
