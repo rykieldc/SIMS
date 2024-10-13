@@ -2,8 +2,21 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.SIMS" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/primary_color</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="android:statusBarColor">@color/bg_white</item>
+        <item name="fontFamily">@font/poppins_medium</item>
     </style>
 
     <style name="Theme.SIMS" parent="Base.Theme.SIMS" />
+
+    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/bg_white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/sims_logo</item>
+        <item name="postSplashScreenTheme">@style/Base.Theme.SIMS</item>
+    </style>
+
+    <style name="App.Custom.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/active_indicator</item>
+    </style>
 </resources>

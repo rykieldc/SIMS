@@ -4,4 +4,12 @@
     <color name="white">#F4EDED</color>
     <color name="red">#EFE03C3C</color>
     <color name="lightred">#F17878</color>
+    <color name="blue">#110A63</color>
+    <color name="bg_white">#FFFFF9</color>
+    <color name="gr_upper">#F1CDCD</color>
+    <color name="gr_lower">#E5A9A9</color>
+    <color name="primary_color">#C73C46</color>
+    <color name="primary_variant">#CC4F58</color>
+    <color name="accent_color">#DC868E</color>
+    <color name="active_indicator">#56E5A9A9</color>
 </resources>
