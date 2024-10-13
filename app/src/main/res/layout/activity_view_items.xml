@@ -73,7 +73,7 @@
                         android:autofillHints="productName"
                         android:background="@drawable/bg_button"
                         android:ems="10"
-                        android:hint="@string/search"
+                        android:hint="@string/search_product"
                         android:inputType="text"
                         android:paddingStart="6dp"
                         android:paddingEnd="6dp"
