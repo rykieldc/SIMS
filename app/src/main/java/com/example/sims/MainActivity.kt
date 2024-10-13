@@ -33,21 +33,11 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.dashboard -> {
-                    TODO(/* Add Dashboard Fragment
-
-                    replaceFragment(DashboardPage())
-                    true
-
-                    */)
+                    TODO("Add Dashboard Fragment")
                 }
 
                 R.id.notifications -> {
-                    TODO(/* Add Notifications Fragment
-
-                    replaceFragment(NotificationsPage())
-                    true
-
-                    */)
+                    TODO("Add Notifications Fragment")
                 }
 
                 R.id.profile -> {
@@ -56,22 +46,13 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.settings -> {
-                    TODO(/* Add Settings Fragment
-
-                    replaceFragment(SettingsPage())
-                    true
-
-                    */)
+                    TODO("Add Settings Fragment")
                 }
 
                 else -> false
             }
         }
-        TODO(/* Add initial fragment
-
         replaceFragment(ProfilePage())
-
-        */)
     }
 
     private fun replaceFragment(fragment: Fragment){
