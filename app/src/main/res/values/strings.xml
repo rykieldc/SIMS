@@ -100,6 +100,4 @@
     <string name="desc_mission">Mission</string>
     <string name="vision">In the medical supply sector, we want to be a dependable leader that advances healthcare by innovation, customer-focused care, and a dedication to improving community well-being throughout the world.</string>
     <string name="desc_vision">Vision</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
