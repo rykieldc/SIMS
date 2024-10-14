@@ -37,7 +37,9 @@ class Settings : Fragment() {
         }
 
         aboutButton.setOnClickListener {
-            // TODO: Implement about functionality
+            val intent = Intent(requireActivity(), AboutPage::class.java)
+            startActivity(intent)
+            requireActivity().finish()
         }
 
         return view

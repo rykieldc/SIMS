@@ -94,4 +94,10 @@
     <string name="sample_notif3">Stocks for [GreenCross - Isopropyl Alcohol 70% (500ml)] is very low. Stocks left: [2]</string>
     <string name="sample_notif4">Stocks for [GreenCross - Hand Sanitizer (300ml)] is very low. Stocks left: [1]</string>
     <string name="yesterday">Yesterday</string>
+    <string name="sanvicare_logo">Sanvicare Logo</string>
+    <string name="sanvicare_medical_supply">Sanvicare Medical Supply</string>
+    <string name="mission">Our mission is to help healthcare providers and enhance patient care by offering top-notch medical supplies and equipment that are easily accessible, reasonably priced, and dependable for everyone.</string>
+    <string name="desc_mission">Mission</string>
+    <string name="vision">In the medical supply sector, we want to be a dependable leader that advances healthcare by innovation, customer-focused care, and a dedication to improving community well-being throughout the world.</string>
+    <string name="desc_vision">Vision</string>
 </resources>
