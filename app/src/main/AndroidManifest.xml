@@ -13,6 +13,9 @@
         android:theme="@style/Theme.SIMS"
         tools:targetApi="31">
         <activity
+            android:name=".layout_aboutuspage"
+            android:exported="false" />
+        <activity
             android:name=".UserLogsActivity"
             android:exported="false" />
         <activity
