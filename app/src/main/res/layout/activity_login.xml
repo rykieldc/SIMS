@@ -97,18 +97,19 @@
 
     </androidx.cardview.widget.CardView>
 
-
     <TextView
         android:id="@+id/contactAdmin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:clickable="true"
         android:focusable="true"
+        android:minHeight="48dp"
         android:text="Contact Admin for Support"
         android:textColor="@color/link_color"
         android:textSize="14sp"
-        android:clickable="true"
         android:textStyle="italic"
         tools:ignore="HardcodedText" />
 
 </LinearLayout>
+

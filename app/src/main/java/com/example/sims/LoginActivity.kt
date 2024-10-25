@@ -3,6 +3,7 @@ package com.example.sims
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -18,7 +19,6 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var usernameEditText: EditText
     private lateinit var passwordEditText: EditText
     private lateinit var loginButton: Button
-    private lateinit var signupTextView: TextView
     private lateinit var contactAdminTextView: TextView
     private lateinit var dbHelper: DatabaseHelper
 
@@ -37,27 +37,29 @@ class LoginActivity : AppCompatActivity() {
         dbHelper = DatabaseHelper(this)
 
         loginButton.setOnClickListener {
-            val username = usernameEditText.text.toString()
-            val password = passwordEditText.text.toString()
+            val username = usernameEditText.text.toString().trim()
+            val password = passwordEditText.text.toString().trim()
 
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please enter a username and password", Toast.LENGTH_SHORT).show()
             } else {
+                Log.d("LoginActivity", "Attempting to log in with Username: $username")
 
                 val userExists = dbHelper.checkUser(username, password)
                 if (userExists) {
-
+                    Log.d("LoginActivity", "Login successful for Username: $username")
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
                     finish()
                 } else {
+                    Log.d("LoginActivity", "Login failed for Username: $username")
                     Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show()
                 }
             }
         }
 
         contactAdminTextView.setOnClickListener {
-            val phoneNumber = "+1234567890" // palitan to
+            val phoneNumber = "+1234567890" // Replace with actual admin phone number
 
             val phoneIntent = Intent(Intent.ACTION_DIAL).apply {
                 data = Uri.parse("tel:$phoneNumber")

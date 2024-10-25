@@ -21,12 +21,13 @@ class Dashboard : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Find card views by their IDs
         val addItemCardView = view.findViewById<CardView>(R.id.cvAddItem)
         val editItemCardView = view.findViewById<CardView>(R.id.cvEditItem)
         val viewItemCardView = view.findViewById<CardView>(R.id.cvViewItem)
         val deleteItemCardView = view.findViewById<CardView>(R.id.cvDeleteItem)
 
-
+        // Set click listeners for each card view to start the corresponding activity
         addItemCardView.setOnClickListener {
             val intent = Intent(requireContext(), AddItemActivity::class.java)
             startActivity(intent)
