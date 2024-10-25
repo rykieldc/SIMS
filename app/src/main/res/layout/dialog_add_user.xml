@@ -81,7 +81,7 @@
                 android:textAllCaps="true"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@+id/UploadRole"
+                app:layout_constraintBottom_toBottomOf="@+id/uploadRole"
                 app:layout_constraintEnd_toEndOf="@+id/descName"
                 app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toStartOf="parent"
@@ -126,21 +126,14 @@
                 app:layout_constraintStart_toEndOf="@+id/descUsername"
                 app:layout_constraintTop_toBottomOf="@+id/uploadName" />
 
-            <EditText
-                android:id="@+id/UploadRole"
+            <Spinner
+                android:id="@+id/uploadRole"
                 android:layout_width="200dp"
                 android:layout_height="50dp"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="5dp"
-                android:autofillHints="Role"
                 android:background="@drawable/bg_fields"
-                android:gravity="start|center_vertical"
-                android:hint="@string/role"
-                android:inputType="text"
-                android:maxWidth="400dp"
-                android:padding="5dp"
-                android:textColor="@color/black"
-                android:textColorHint="#757575"
+                android:gravity="center_vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/descUsername"
                 app:layout_constraintTop_toBottomOf="@+id/uploadUsername" />
@@ -151,7 +144,7 @@
                 android:layout_marginTop="32dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/UploadRole">
+                app:layout_constraintTop_toBottomOf="@+id/uploadRole">
 
                 <Button
                     android:id="@+id/saveBtn"

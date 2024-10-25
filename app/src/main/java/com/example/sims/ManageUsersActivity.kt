@@ -7,10 +7,15 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
+import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -21,11 +26,14 @@ import androidx.core.view.WindowInsetsCompat
 class ManageUsersActivity : AppCompatActivity() {
 
     private lateinit var header: TextView
+    private lateinit var databaseHelper: DatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_manage_users)
+
+        databaseHelper = DatabaseHelper(this)
 
         header = findViewById(R.id.header)
 
@@ -84,20 +92,53 @@ class ManageUsersActivity : AppCompatActivity() {
             .setTitle("Add User")
             .create()
 
+        val nameEditText = dialogView.findViewById<EditText>(R.id.uploadName)
+        val usernameEditText = dialogView.findViewById<EditText>(R.id.uploadUsername)
+        val roleSpinner = dialogView.findViewById<Spinner>(R.id.uploadRole)
+
+        // Define role options
+        val roles = arrayOf("Admin", "User")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, roles)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        roleSpinner.adapter = adapter
+
         val saveButton = dialogView.findViewById<Button>(R.id.saveBtn)
         val cancelButton = dialogView.findViewById<Button>(R.id.cancelBtn)
 
         saveButton.setOnClickListener {
-            // TODO : Handle save button click
+            val name = nameEditText.text.toString()
+            val username = usernameEditText.text.toString()
+            val selectedRole = roleSpinner.selectedItem.toString()
 
-            dialog.dismiss() // Dismiss the dialog after saving
+            // Assign default password based on the selected role
+            val password = if (selectedRole == "Admin") "admin_password" else "user_password"
+
+            if (name.isNotBlank() && username.isNotBlank()) {
+                // Save user data to the database
+                addUserToDatabase(name, username, password, selectedRole)
+                dialog.dismiss() // Close dialog after saving
+            } else {
+                // Show error if fields are incomplete
+                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+            }
         }
 
         cancelButton.setOnClickListener {
-            dialog.dismiss() // Dismiss the dialog
+            dialog.dismiss() // Close dialog on cancel
         }
 
         dialog.show()
+    }
+
+    private fun addUserToDatabase(name: String, username: String, password: String, role: String) {
+        // Add user to the SQLite database using DatabaseHelper
+        Log.d("ManageUsersActivity", "User added: Name=$name, Username=$username, Password=$password, Role=$role")
+        val success = databaseHelper.addUser(username, password, name, role)
+        if (success) {
+            Toast.makeText(this, "User added successfully!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Error adding user to database. Username already exists.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun showEditUserDialog() {

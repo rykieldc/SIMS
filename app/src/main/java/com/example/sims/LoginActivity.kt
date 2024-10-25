@@ -45,10 +45,17 @@ class LoginActivity : AppCompatActivity() {
             } else {
                 Log.d("LoginActivity", "Attempting to log in with Username: $username")
 
-                val userExists = dbHelper.checkUser(username, password)
-                if (userExists) {
+                // Check user credentials in the database
+                val isUserValid = dbHelper.checkUser(username, password)
+
+                if (isUserValid) {
                     Log.d("LoginActivity", "Login successful for Username: $username")
+
+                    // Retrieve the user role using the checkRole method
+                    val userRole = dbHelper.checkRole(username)
+                    Log.d("LoginActivity", "role: $userRole")
                     val intent = Intent(this, MainActivity::class.java)
+                    intent.putExtra("role", userRole) // Pass user role
                     startActivity(intent)
                     finish()
                 } else {
@@ -59,7 +66,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         contactAdminTextView.setOnClickListener {
-            val phoneNumber = "+1234567890" // Replace with actual admin phone number
+            val phoneNumber = "09280990649"
 
             val phoneIntent = Intent(Intent.ACTION_DIAL).apply {
                 data = Uri.parse("tel:$phoneNumber")
@@ -74,3 +81,4 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 }
+
