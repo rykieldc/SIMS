@@ -45,26 +45,25 @@ class LoginActivity : AppCompatActivity() {
             } else {
                 Log.d("LoginActivity", "Attempting to log in with Username: $username")
 
-                // Check for specific credentials
-                val intent = Intent(this, MainActivity::class.java)
-                if (username == "user" && password == "user_password") {
-                    Log.d("LoginActivity", "Login successful for User account")
-                    intent.putExtra("role", "user") // Pass "user" role
-                    startActivity(intent)
-                    finish()
-                } else if (username == "admin" && password == "admin_password") {
-                    Log.d("LoginActivity", "Login successful for Admin account")
-                    intent.putExtra("role", "admin") // Pass "admin" role
+                // Check user credentials in the database
+                val isUserValid = dbHelper.checkUser(username, password)
+
+                if (isUserValid) {
+                    Log.d("LoginActivity", "Login successful for Username: $username")
+
+                    // Retrieve the user role using the checkRole method
+                    val userRole = dbHelper.checkRole(username)
+                    Log.d("LoginActivity", "role: $userRole")
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.putExtra("role", userRole) // Pass user role
                     startActivity(intent)
                     finish()
                 } else {
                     Log.d("LoginActivity", "Login failed for Username: $username")
                     Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show()
-
                 }
             }
         }
-
 
         contactAdminTextView.setOnClickListener {
             val phoneNumber = "09280990649"
@@ -82,3 +81,4 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 }
+

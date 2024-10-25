@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         userRole = intent.getStringExtra("role")
 
         // Set initial fragment based on user role
-        if (userRole == "admin") {
+        if (userRole == "Admin") {
             replaceFragment(AdminDashboard())
         } else {
             replaceFragment(UserDashboard())
@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.dashboard -> {
-                    if (userRole == "admin") {
+                    if (userRole == "Admin") {
                         replaceFragment(AdminDashboard())
                     } else {
                         replaceFragment(UserDashboard())
