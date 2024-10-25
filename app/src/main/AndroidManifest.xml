@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Add internet permission if your app needs to connect to a server -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Optional: If you're writing files to external storage -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,6 +19,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SIMS"
         tools:targetApi="31">
+
+        <!-- Activity definitions -->
         <activity
             android:name=".AboutPage"
             android:exported="false" />
@@ -39,16 +48,18 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
+
+        <!-- LoginActivity is the launcher activity -->
         <activity
             android:name=".LoginActivity"
             android:exported="true"
             android:theme="@style/Theme.App.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

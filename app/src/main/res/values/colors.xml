@@ -18,4 +18,5 @@
     <color name="divider_color">#D05E67</color>
     <color name="profile_color">#CD7077</color>
     <color name="hint_color">#757575</color>
+    <color name="link_color">#DD1A1A</color>
 </resources>
