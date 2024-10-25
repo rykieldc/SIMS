@@ -68,7 +68,7 @@
     <string name="current_password">Current Password</string>
     <string name="new_password">New Password</string>
     <string name="confirm_new_password">Confirm New Password</string>
-    <string name="greetings_admin">Hello, Admin01!</string>
+    <string name="greetings_admin">Hello, Admin!</string>
     <string name="history">History</string>
     <string name="manage_users">Manage Users</string>
     <string name="add_user">Add User</string>
@@ -100,4 +100,5 @@
     <string name="desc_mission">Mission</string>
     <string name="vision">In the medical supply sector, we want to be a dependable leader that advances healthcare by innovation, customer-focused care, and a dedication to improving community well-being throughout the world.</string>
     <string name="desc_vision">Vision</string>
+    <string name="user_admin">admin</string>
 </resources>

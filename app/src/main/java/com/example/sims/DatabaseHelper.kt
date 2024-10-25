@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 
 private const val DATABASE_NAME = "Users.db"
-private const val DATABASE_VERSION = 1
+private const val DATABASE_VERSION = 2
 private const val TABLE_USERS = "users"
 private const val COLUMN_USERNAME = "username"
 private const val COLUMN_PASSWORD = "password"
@@ -22,7 +22,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
 
         val initialUsers = listOf(
+            Pair("user", "user_password"),
             Pair("admin", "admin_password")
+
         )
 
 
