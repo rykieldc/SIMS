@@ -32,7 +32,7 @@ class UserDashboard : Fragment() {
 
 
         val usernameTextView = view.findViewById<TextView>(R.id.header_dashboard)
-        usernameTextView.text = "Hello, $userName!"
+        usernameTextView.text = getString(R.string.greetings, userName)
 
         // Find card views by their IDs
         val addItemCardView = view.findViewById<CardView>(R.id.cvAddItem)

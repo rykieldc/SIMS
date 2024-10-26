@@ -31,7 +31,7 @@ class AdminDashboard : Fragment() {
         userRole = arguments?.getString("role")
 
         val usernameTextView = view.findViewById<TextView>(R.id.header_dashboard)
-        usernameTextView.text = "Hello, $userName!"
+        usernameTextView.text = getString(R.string.greetings, userName)
 
         val addItemCardView = view.findViewById<CardView>(R.id.cvAddItem)
         val editItemCardView = view.findViewById<CardView>(R.id.cvEditItem)
