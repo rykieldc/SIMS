@@ -51,7 +51,7 @@ class ViewItemsActivity : AppCompatActivity() {
 
 
         productList = ArrayList()
-        recyclerView = findViewById(R.id.rvViewItems) as RecyclerView
+        recyclerView = findViewById(R.id.rvViewItems)!!
         recyclerViewProductAdapter = RecyclerViewProductAdapter(this@ViewItemsActivity, productList)
 
         val layoutManager: RecyclerView.LayoutManager = GridLayoutManager(this, 2)
@@ -72,11 +72,13 @@ class ViewItemsActivity : AppCompatActivity() {
     private fun fetchItemsFromDatabase() {
         val databaseHelper = FirebaseDatabaseHelper()
         databaseHelper.fetchItems { itemsList ->
+            val previousSize = productList.size
             productList.clear()
             productList.addAll(itemsList.map { item ->
                 Product(item.supplier, item.itemName, "${item.stocksLeft} units", item.imageUrl)
             })
-            recyclerViewProductAdapter?.notifyDataSetChanged()
+
+            recyclerViewProductAdapter?.notifyItemRangeInserted(previousSize, productList.size - previousSize)
         }
     }
 }
