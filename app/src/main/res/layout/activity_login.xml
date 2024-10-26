@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="30dp"
         app:cardCornerRadius="30dp"
-        app:cardElevation="20dp"
+        app:cardElevation="5dp"
         app:cardBackgroundColor="@color/gr_upper">
 
         <LinearLayout
@@ -36,7 +36,7 @@
                 android:id="@+id/LoginText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/login"
+                android:text="@string/loginBtn"
                 android:textAlignment="center"
                 android:textAllCaps="true"
                 android:textColor="#D32F2F"
@@ -84,14 +84,14 @@
                 android:layout_width="200dp"
                 android:layout_height="60dp"
                 android:layout_gravity="center_horizontal"
-                android:maxWidth="400dp"
                 android:layout_marginTop="30dp"
                 android:backgroundTint="@color/red"
-                android:text="@string/login"
+                android:maxWidth="400dp"
+                android:text="@string/loginBtn"
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 app:cornerRadius="20dp"
-                tools:ignore="TextContrastCheck" />
+                tools:ignore="TextContrastCheck,DuplicateSpeakableTextCheck" />
 
         </LinearLayout>
 
