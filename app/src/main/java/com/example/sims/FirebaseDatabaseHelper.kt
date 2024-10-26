@@ -1,17 +1,30 @@
 package com.example.sims
 
+import com.google.firebase.Firebase
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
-import com.google.firebase.Firebase
 
 private val usersRef: DatabaseReference = Firebase.database.reference.child("users")
+private val itemsRef: DatabaseReference = Firebase.database.reference.child("items")
 
 data class User(
     val username: String = "",
     val password: String = "",
     val name: String = "",
     val role: String = ""
+)
+
+data class Item(
+    val itemCode: String = "",
+    val itemName: String = "",
+    val itemCategory: String = "",
+    val location: String = "",
+    val supplier: String = "",
+    val stocksLeft: Int = 0,
+    val dateAdded: String = "",
+    val lastRestocked: String = "",
+    val imageUrl: String = ""
 )
 
 class FirebaseDatabaseHelper {
@@ -86,6 +99,22 @@ class FirebaseDatabaseHelper {
             }
         }.addOnFailureListener {
             callback(false)
+        }
+    }
+
+    // Function to fetch items from Firebase
+    fun fetchItems(callback: (List<Item>) -> Unit) {
+        itemsRef.get().addOnSuccessListener { snapshot ->
+            val itemsList = mutableListOf<Item>()
+            for (itemSnapshot in snapshot.children) {
+                val item = itemSnapshot.getValue<Item>()
+                if (item != null) {
+                    itemsList.add(item)
+                }
+            }
+            callback(itemsList)
+        }.addOnFailureListener {
+            callback(emptyList())
         }
     }
 

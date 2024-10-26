@@ -9,6 +9,7 @@
     tools:context=".Settings">
 
     <LinearLayout
+        android:id="@+id/settings_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -35,7 +36,7 @@
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="20dp"
             app:cardCornerRadius="30dp"
-            app:cardElevation="20dp"
+            app:cardElevation="5dp"
             android:background="@color/bg_white">
 
             <LinearLayout

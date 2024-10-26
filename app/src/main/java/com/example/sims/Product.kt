@@ -1,3 +1,8 @@
 package com.example.sims
 
-data class Product(var supplier: String, var name: String, var units: String, var img: Int)
+data class Product(
+    val supplier: String,
+    val name: String,
+    val units: String,
+    val imageUrl: String
+)

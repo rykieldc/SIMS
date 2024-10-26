@@ -53,7 +53,7 @@
                 android:fontFamily="@font/poppins_black"
                 android:text="@string/product_name"
                 android:textColor="@color/black"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -64,6 +64,7 @@
                 android:text="@string/units"
                 android:textColor="@color/white"
                 android:textSize="15sp"
+                android:textAlignment="textEnd"
                 tools:ignore="TextContrastCheck" />
         </LinearLayout>
 

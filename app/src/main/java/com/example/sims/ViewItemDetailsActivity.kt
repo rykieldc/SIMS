@@ -24,7 +24,7 @@ class ViewItemDetailsActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_view_item_details)
 
-        headerProduct = findViewById(R.id.header_product)
+        headerProduct = findViewById(R.id.header)
 
         val drawable = ContextCompat.getDrawable(this, R.drawable.ic_back_arrow_circle)
         drawable?.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
