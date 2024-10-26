@@ -5,9 +5,11 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextUtils
 import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -45,7 +47,7 @@ class ChangePasswordActivity : AppCompatActivity() {
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
         spannableString.setSpan(
-            AddItemActivity.DrawableClickSpan { onBackPressedDispatcher.onBackPressed() },
+            DrawableClickSpan { onBackPressedDispatcher.onBackPressed() },
             0,
             1,
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -76,6 +78,12 @@ class ChangePasswordActivity : AppCompatActivity() {
         nPasswordEditText = findViewById(R.id.newPasswordEditText)
         cNewPasswordEditText = findViewById(R.id.confirmPasswordEditText)
 
+    }
+
+    class DrawableClickSpan(private val clickListener: () -> Unit) : ClickableSpan() {
+        override fun onClick(widget: View) {
+            clickListener()
+        }
     }
 
     private fun showSaveConfirmationDialog() {

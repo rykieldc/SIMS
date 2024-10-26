@@ -24,7 +24,7 @@ class EditItemActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_edit_item)
 
-        headerProduct = findViewById(R.id.header_product)
+        headerProduct = findViewById(R.id.header)
 
         val drawable = ContextCompat.getDrawable(this, R.drawable.ic_back_arrow_circle)
         drawable?.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)

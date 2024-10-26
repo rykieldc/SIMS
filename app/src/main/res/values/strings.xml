@@ -35,7 +35,7 @@
     <string name="delete_item">Delete Item</string>
     <string name="greetings">Hello, %1$s!</string>
     <string name="edit_image">Edit Image</string>
-    <string name="login">Login</string>
+    <string name="loginBtn">Login</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="login_question">Not yet Registered?\nContact admin for support.</string>
