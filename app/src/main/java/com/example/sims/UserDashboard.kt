@@ -5,10 +5,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 
 class UserDashboard : Fragment() {
+
+    private var user: String? = null
+    private var userName: String? = null
+    private var userRole: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -20,6 +25,14 @@ class UserDashboard : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        user = arguments?.getString("name")
+        userName = arguments?.getString("username")
+        userRole = arguments?.getString("role")
+
+
+        val usernameTextView = view.findViewById<TextView>(R.id.header_dashboard)
+        usernameTextView.text = getString(R.string.greetings, userName)
 
         // Find card views by their IDs
         val addItemCardView = view.findViewById<CardView>(R.id.cvAddItem)

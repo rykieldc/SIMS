@@ -12,6 +12,7 @@ class Settings : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
+    private var userName: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,8 +26,11 @@ class Settings : Fragment() {
         val logoutButton = binding.logoutBtn
         val aboutButton = binding.aboutBtn
 
+        userName = arguments?.getString("username")
+
         changePasswordButton.setOnClickListener {
             val intent = Intent(requireContext(), ChangePasswordActivity::class.java)
+            intent.putExtra("username", userName)
             startActivity(intent)
         }
 

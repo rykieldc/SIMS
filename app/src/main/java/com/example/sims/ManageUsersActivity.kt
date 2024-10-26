@@ -7,7 +7,6 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
-import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -26,14 +25,14 @@ import androidx.core.view.WindowInsetsCompat
 class ManageUsersActivity : AppCompatActivity() {
 
     private lateinit var header: TextView
-    private lateinit var databaseHelper: DatabaseHelper
+    private lateinit var firebaseHelper: FirebaseDatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_manage_users)
 
-        databaseHelper = DatabaseHelper(this)
+        firebaseHelper = FirebaseDatabaseHelper()
 
         header = findViewById(R.id.header)
 
@@ -131,13 +130,13 @@ class ManageUsersActivity : AppCompatActivity() {
     }
 
     private fun addUserToDatabase(name: String, username: String, password: String, role: String) {
-        // Add user to the SQLite database using DatabaseHelper
-        Log.d("ManageUsersActivity", "User added: Name=$name, Username=$username, Password=$password, Role=$role")
-        val success = databaseHelper.addUser(username, password, name, role)
-        if (success) {
-            Toast.makeText(this, "User added successfully!", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Error adding user to database. Username already exists.", Toast.LENGTH_SHORT).show()
+
+        firebaseHelper.addUser(username, password, name, role) { success ->
+            if (success) {
+                Toast.makeText(this, "User added successfully!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Error adding user to database. Username may already exist.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -152,13 +151,12 @@ class ManageUsersActivity : AppCompatActivity() {
         val cancelButton = dialogView.findViewById<Button>(R.id.cancelBtn)
 
         saveButton.setOnClickListener {
-            // TODO : Handle save button click
 
-            dialog.dismiss() // Dismiss the dialog after saving
+            dialog.dismiss()
         }
 
         cancelButton.setOnClickListener {
-            dialog.dismiss() // Dismiss the dialog
+            dialog.dismiss()
         }
 
         dialog.show()
@@ -174,13 +172,12 @@ class ManageUsersActivity : AppCompatActivity() {
         val noButton = dialogView.findViewById<Button>(R.id.noBtn)
 
         yesButton.setOnClickListener {
-            // TODO : Handle yes button click
 
-            dialog.dismiss() // Dismiss the dialog after saving
+            dialog.dismiss()
         }
 
         noButton.setOnClickListener {
-            dialog.dismiss() // Dismiss the dialog
+            dialog.dismiss()
         }
 
         dialog.show()
