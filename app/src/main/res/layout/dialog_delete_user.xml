@@ -33,7 +33,7 @@
                 android:fontFamily="@font/poppins_black"
                 android:gravity="center_horizontal"
                 android:text="@string/delete_user"
-                android:textAllCaps="true"
+
                 android:textColor="@color/black"
                 android:textSize="24sp"
                 android:textStyle="bold"
