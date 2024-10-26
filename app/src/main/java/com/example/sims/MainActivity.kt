@@ -1,7 +1,6 @@
 package com.example.sims
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -102,7 +101,12 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.settings -> {
-                    replaceFragment(Settings())
+                    val settingsFragment = Settings().apply {
+                        arguments = Bundle().apply {
+                            putString("username", userName)
+                        }
+                    }
+                    replaceFragment(settingsFragment)
                     true
                 }
                 else -> false
