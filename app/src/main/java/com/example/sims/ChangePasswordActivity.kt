@@ -123,7 +123,7 @@ class ChangePasswordActivity : AppCompatActivity() {
                 Toast.makeText(this, "Password changed successfully", Toast.LENGTH_SHORT).show()
                 finish()
             } else {
-                Toast.makeText(this, "Failed to change password", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Incorrect Current Password", Toast.LENGTH_SHORT).show()
             }
         }
     }
