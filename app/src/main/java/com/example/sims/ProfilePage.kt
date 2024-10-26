@@ -1,14 +1,11 @@
 package com.example.sims
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.cardview.widget.CardView
 
 class ProfilePage : Fragment() {
 
@@ -31,8 +28,6 @@ class ProfilePage : Fragment() {
         user = arguments?.getString("name")
         userName = arguments?.getString("username")
         userRole = arguments?.getString("role")
-
-        Log.d("ProfilePage", "User: $user, Username: $userName, Role: $userRole")
 
         val userTextView = view.findViewById<TextView>(R.id.profile_name_value)
         userTextView.text =  user

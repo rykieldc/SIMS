@@ -7,7 +7,6 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
-import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -131,7 +130,6 @@ class ManageUsersActivity : AppCompatActivity() {
     }
 
     private fun addUserToDatabase(name: String, username: String, password: String, role: String) {
-        Log.d("ManageUsersActivity", "Attempting to add user: Name=$name, Username=$username, Role=$role")
 
         firebaseHelper.addUser(username, password, name, role) { success ->
             if (success) {
