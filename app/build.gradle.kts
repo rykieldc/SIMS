@@ -18,6 +18,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -37,6 +38,10 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    packagingOptions {
+        exclude("META-INF/DEPENDENCIES")
+    }
 }
 
 dependencies {
@@ -46,6 +51,13 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+
+    // Google API and Drive
+    implementation(libs.play.services.auth.v2050)
+    implementation(libs.google.api.client.android.v1332)
+    implementation(libs.google.api.client.gson)
+    implementation(libs.google.api.services.drive.vv3rev1361250)
+    implementation (libs.google.http.client.gson)
 
     // Glide dependencies
     implementation(libs.glide)

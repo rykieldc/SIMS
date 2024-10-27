@@ -34,8 +34,8 @@ class RecyclerViewProductAdapter(
         // Load the image from URL using Glide
         Glide.with(holder.itemView.context)
             .load(product.imageUrl) // Assuming imageUrl is a property of Product
-            .placeholder(R.drawable.ic_upload_img) // Optional: placeholder image
-            .error(R.drawable.ic_upload_img) // Optional: error image if loading fails
+            .placeholder(R.drawable.ic_img_placeholder) // Optional: placeholder image
+            .error(R.drawable.ic_img_placeholder) // Optional: error image if loading fails
             .into(holder.productImg)
 
         holder.productSupplier.text = product.supplier
