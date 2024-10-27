@@ -102,66 +102,64 @@ class AddItemActivity : AppCompatActivity() {
         }
     }
 
-    // New method to validate input fields
     private fun validateInputs(): Boolean {
-        // Check if image is set
         if (uploadImg.drawable == null) {
             uploadImg.setImageURI(null) // Set image value to an empty string
         }
 
-        // Check if product name is filled
         if (productNameEditText.text.isNullOrEmpty()) {
             showToast("Please enter the product name.")
             return false
         }
 
-        // Check if units are filled
         if (unitsEditText.text.isNullOrEmpty()) {
             showToast("Please enter the units.")
             return false
         }
 
-        // Check if supplier is filled
         if (supplierEditText.text.isNullOrEmpty()) {
             showToast("Please enter the supplier.")
             return false
         }
 
-        // Check if product code is filled
         if (productCodeEditText.text.isNullOrEmpty()) {
             showToast("Please enter the product code.")
             return false
         }
 
-        // Check if category is selected
         if (!isCategorySelected) {
             showToast("Please select a category.")
             return false
         }
 
-        // Check if location is selected
         if (!isLocationSelected) {
             showToast("Please select a location.")
             return false
         }
 
-        // Check if date added is filled
         if (uploadDateAdded.text.isNullOrEmpty()) {
             showToast("Please enter the date added.")
             return false
         }
 
-        // Check if last restocked date is filled
         if (uploadLastRestocked.text.isNullOrEmpty()) {
             showToast("Please enter the last restocked date.")
             return false
         }
 
-        return true // All validations passed
+        return true
     }
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    fun openImageChooser(view: View) {
+        val intent = Intent().apply {
+            type = "image/*"
+            action = Intent.ACTION_GET_CONTENT
+        }
+        imageChooserLauncher.launch(intent)
     }
 
     private fun showSaveConfirmationDialog() {
@@ -174,7 +172,7 @@ class AddItemActivity : AppCompatActivity() {
             .create()
 
         saveButton.setOnClickListener {
-            saveItemToDatabase() // Call the new save function
+            saveItemToDatabase()
             dialog.dismiss()
         }
 
@@ -186,58 +184,50 @@ class AddItemActivity : AppCompatActivity() {
     }
 
     private fun saveItemToDatabase() {
-        val imageUri = "" // Set image URL to empty string for now
+        val imageUri = ""
 
-        // Get product details
         val productName = productNameEditText.text.toString()
-        val units = unitsEditText.text.toString().toIntOrNull() // Use toIntOrNull to avoid crashes
+        val units = unitsEditText.text.toString().toIntOrNull()
         val productCode = productCodeEditText.text.toString()
-        val supplier = supplierEditText.text.toString() // Get supplier input
+        val supplier = supplierEditText.text.toString()
 
-        // Get selected category and location
         val categorySpinner: Spinner = findViewById(R.id.uploadCategory)
         val selectedCategory = categorySpinner.selectedItem?.toString() ?: "No category selected"
 
         val locationSpinner: Spinner = findViewById(R.id.uploadLocation)
         val selectedLocation = locationSpinner.selectedItem?.toString() ?: "No location selected"
 
-        // Get dates
         val dateAdded = uploadDateAdded.text.toString()
         val lastRestocked = uploadLastRestocked.text.toString()
 
-        // Check if the product name already exists
         firebaseDatabaseHelper.doesProductNameExist(productName) { exists ->
             if (exists) {
                 showToast("Product name already exists. Please choose a different name.")
-                return@doesProductNameExist // Exit the lambda to prevent saving
+                return@doesProductNameExist
             }
 
-            // Create Item object to save
             val item = Item(
                 itemCode = productCode,
                 itemName = productName,
                 itemCategory = selectedCategory,
                 location = selectedLocation,
                 supplier = supplier,
-                stocksLeft = units ?: 0, // Default to 0 if units is null
+                stocksLeft = units ?: 0,
                 dateAdded = dateAdded,
                 lastRestocked = lastRestocked,
-                imageUrl = imageUri // Image URL is currently empty
+                imageUrl = imageUri
             )
 
-            // Save item to database
             firebaseDatabaseHelper.saveItem(item) { success ->
                 if (success) {
                     showToast("Item saved successfully!")
-                    finish() // Close the activity after saving
+                    finish()
                 } else {
                     showToast("Failed to save item.")
                 }
             }
         }
     }
-
-
 
     private fun showCancelConfirmationDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_cancel, null)
@@ -250,7 +240,7 @@ class AddItemActivity : AppCompatActivity() {
 
         yesButton.setOnClickListener {
             dialog.dismiss()
-            finish() // Close the activity
+            finish()
         }
 
         noButton.setOnClickListener {
@@ -267,24 +257,22 @@ class AddItemActivity : AppCompatActivity() {
         val categorySpinner: Spinner = findViewById(R.id.uploadCategory)
         val locationSpinner: Spinner = findViewById(R.id.uploadLocation)
 
-        // Custom adapter for categories
         val categoryAdapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories) {
             override fun isEnabled(position: Int): Boolean {
-                return position != 0 // Disable the first item
+                return position != 0
             }
 
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getDropDownView(position, convertView, parent) as TextView
                 if (position == 0) {
-                    view.setTextColor(Color.GRAY) // Set hint text color to gray
+                    view.setTextColor(Color.GRAY)
                 } else {
-                    view.setTextColor(Color.BLACK) // Set other items color to black
+                    view.setTextColor(Color.BLACK)
                 }
                 return view
             }
         }
 
-        // Custom adapter for locations
         val locationAdapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, locations) {
             override fun isEnabled(position: Int): Boolean {
                 return position != 0 // Disable the first item
@@ -293,9 +281,9 @@ class AddItemActivity : AppCompatActivity() {
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getDropDownView(position, convertView, parent) as TextView
                 if (position == 0) {
-                    view.setTextColor(Color.GRAY) // Set hint text color to gray
+                    view.setTextColor(Color.GRAY)
                 } else {
-                    view.setTextColor(Color.BLACK) // Set other items color to black
+                    view.setTextColor(Color.BLACK)
                 }
                 return view
             }
@@ -304,17 +292,16 @@ class AddItemActivity : AppCompatActivity() {
         categorySpinner.adapter = categoryAdapter
         locationSpinner.adapter = locationAdapter
 
-        // Set the first item as selected initially
-        categorySpinner.setSelection(0) // Select the placeholder
-        locationSpinner.setSelection(0) // Select the placeholder
+        categorySpinner.setSelection(0)
+        locationSpinner.setSelection(0)
 
         categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                if (position > 0) { // Ignore the first position, which is the placeholder
-                    fetchNextProductCode(categories[position]) // Fetch the product code for the selected category
-                    isCategorySelected = true // Mark category as selected
+                if (position > 0) {
+                    fetchNextProductCode(categories[position])
+                    isCategorySelected = true
                 } else {
-                    isCategorySelected = false // Reset flag if placeholder is selected
+                    isCategorySelected = false
                 }
             }
 
@@ -323,7 +310,7 @@ class AddItemActivity : AppCompatActivity() {
 
         locationSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                isLocationSelected = position > 0 // Mark location as selected if not placeholder
+                isLocationSelected = position > 0
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
@@ -336,7 +323,7 @@ class AddItemActivity : AppCompatActivity() {
         firebaseDatabaseHelper.getNextProductCode(selectedCategory) { newCode ->
             newCode?.let {
                 productCodeEditText.setText(it)
-                Log.d("AddItemActivity", "New product code set: $it") // Log the new product code
+                Log.d("AddItemActivity", "New product code set: $it")
             } ?: run {
                 productCodeEditText.setText("")
                 Log.d("AddItemActivity", "No product code found for category: $selectedCategory")
