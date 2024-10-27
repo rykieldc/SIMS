@@ -1,185 +1,101 @@
+// ManageUsersActivity.kt
 package com.example.sims
 
 import android.os.Bundle
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.method.LinkMovementMethod
-import android.text.style.ClickableSpan
-import android.text.style.DynamicDrawableSpan
-import android.text.style.ImageSpan
-import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.Spinner
-import android.widget.TextView
-import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
+import android.view.LayoutInflater
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 class ManageUsersActivity : AppCompatActivity() {
 
-    private lateinit var header: TextView
     private lateinit var firebaseHelper: FirebaseDatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_manage_users)
 
         firebaseHelper = FirebaseDatabaseHelper()
 
-        header = findViewById(R.id.header)
-
-        val drawable = ContextCompat.getDrawable(this, R.drawable.ic_back_arrow_circle)
-        drawable?.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
-
-        val spannableString = SpannableString("  ${header.text}")
-        spannableString.setSpan(
-            ImageSpan(drawable!!, DynamicDrawableSpan.ALIGN_BASELINE),
-            0,
-            1,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-        spannableString.setSpan(
-            DrawableClickSpan { onBackPressedDispatcher.onBackPressed() },
-            0,
-            1,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-
-        header.text = spannableString
-        header.movementMethod = LinkMovementMethod.getInstance()
-
-        val addUserButton = findViewById<Button>(R.id.addUserBtn)
-        addUserButton.setOnClickListener {
-            showAddUserDialog()
-        }
-
         val editUserButton = findViewById<ImageButton>(R.id.editBtn)
         editUserButton.setOnClickListener {
-            showEditUserDialog()
+            showEditUserDialog("username_to_edit") // replace with actual username
         }
 
         val deleteUserButton = findViewById<ImageButton>(R.id.deleteBtn)
         deleteUserButton.setOnClickListener {
-            showDeleteUserDialog()
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+            showDeleteUserDialog("username_to_delete") // replace with actual username
         }
     }
 
-    class DrawableClickSpan(private val clickListener: () -> Unit) : ClickableSpan() {
-        override fun onClick(widget: View) {
-            clickListener()
-        }
-    }
+    private fun showEditUserDialog(username: String) {
+        firebaseHelper.getUser(username) { user ->
+            if (user != null) {
+                val dialogView = layoutInflater.inflate(R.layout.dialog_edit_user, null)
+                val dialog = AlertDialog.Builder(this)
+                    .setView(dialogView)
+                    .setTitle("Edit User")
+                    .create()
 
-    private fun showAddUserDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_add_user, null)
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setTitle("Add User")
-            .create()
+                val nameEditText = dialogView.findViewById<EditText>(R.id.editName)
+                val roleSpinner = dialogView.findViewById<Spinner>(R.id.UploadRole)
 
-        val nameEditText = dialogView.findViewById<EditText>(R.id.uploadName)
-        val usernameEditText = dialogView.findViewById<EditText>(R.id.uploadUsername)
-        val roleSpinner = dialogView.findViewById<Spinner>(R.id.uploadRole)
+                nameEditText.setText(user.name)
+                val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf("Admin", "User"))
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                roleSpinner.adapter = adapter
+                roleSpinner.setSelection(if (user.role == "Admin") 0 else 1)
 
-        // Define role options
-        val roles = arrayOf("Admin", "User")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, roles)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        roleSpinner.adapter = adapter
+                val saveButton = dialogView.findViewById<Button>(R.id.saveBtn)
+                saveButton.setOnClickListener {
+                    val updatedName = nameEditText.text.toString()
+                    val updatedRole = roleSpinner.selectedItem.toString()
+                    val updatedUser = User(username, user.password, updatedName, updatedRole)
 
-        val saveButton = dialogView.findViewById<Button>(R.id.saveBtn)
-        val cancelButton = dialogView.findViewById<Button>(R.id.cancelBtn)
+                    firebaseHelper.updateUser(username, updatedUser) { success ->
+                        if (success) {
+                            Toast.makeText(this, "User updated successfully!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this, "Failed to update user.", Toast.LENGTH_SHORT).show()
+                        }
+                        dialog.dismiss()
+                    }
+                }
 
-        saveButton.setOnClickListener {
-            val name = nameEditText.text.toString()
-            val username = usernameEditText.text.toString()
-            val selectedRole = roleSpinner.selectedItem.toString()
+                val cancelButton = dialogView.findViewById<Button>(R.id.cancelBtn)
+                cancelButton.setOnClickListener { dialog.dismiss() }
 
-            // Assign default password based on the selected role
-            val password = if (selectedRole == "Admin") "admin_password" else "user_password"
-
-            if (name.isNotBlank() && username.isNotBlank()) {
-                // Save user data to the database
-                addUserToDatabase(name, username, password, selectedRole)
-                dialog.dismiss() // Close dialog after saving
+                dialog.show()
             } else {
-                // Show error if fields are incomplete
-                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        cancelButton.setOnClickListener {
-            dialog.dismiss() // Close dialog on cancel
-        }
-
-        dialog.show()
-    }
-
-    private fun addUserToDatabase(name: String, username: String, password: String, role: String) {
-
-        firebaseHelper.addUser(username, password, name, role) { success ->
-            if (success) {
-                Toast.makeText(this, "User added successfully!", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Error adding user to database. Username may already exist.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "User not found.", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun showEditUserDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_edit_user, null)
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setTitle("Edit User")
-            .create()
-
-        val saveButton = dialogView.findViewById<Button>(R.id.saveBtn)
-        val cancelButton = dialogView.findViewById<Button>(R.id.cancelBtn)
-
-        saveButton.setOnClickListener {
-
-            dialog.dismiss()
-        }
-
-        cancelButton.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        dialog.show()
-    }
-
-    private fun showDeleteUserDialog() {
+    private fun showDeleteUserDialog(username: String) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_delete_user, null)
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
+            .setTitle("Delete User")
             .create()
 
         val yesButton = dialogView.findViewById<Button>(R.id.yesBtn)
         val noButton = dialogView.findViewById<Button>(R.id.noBtn)
 
         yesButton.setOnClickListener {
-
-            dialog.dismiss()
+            firebaseHelper.deleteUser(username) { success ->
+                if (success) {
+                    Toast.makeText(this, "User deleted successfully!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Failed to delete user.", Toast.LENGTH_SHORT).show()
+                }
+                dialog.dismiss()
+            }
         }
 
-        noButton.setOnClickListener {
-            dialog.dismiss()
-        }
-
+        noButton.setOnClickListener { dialog.dismiss() }
         dialog.show()
     }
 }
