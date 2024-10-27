@@ -101,15 +101,15 @@
         android:id="@+id/contactAdmin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:clickable="true"
         android:focusable="true"
         android:minHeight="48dp"
-        android:text="Contact Admin for Support"
+        android:text="@string/login_question"
         android:textColor="@color/link_color"
         android:textSize="14sp"
         android:textStyle="italic"
-        tools:ignore="HardcodedText" />
+        android:gravity="center|center_vertical"/>
 
 </LinearLayout>
 

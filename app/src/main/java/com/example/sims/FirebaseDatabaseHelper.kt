@@ -1,12 +1,19 @@
 package com.example.sims
 
+import android.util.Log
 import com.google.firebase.Firebase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
+import java.util.Locale
 
 private val usersRef: DatabaseReference = Firebase.database.reference.child("users")
 private val itemsRef: DatabaseReference = Firebase.database.reference.child("items")
+private val databaseReference = FirebaseDatabase.getInstance().getReference("items")
 
 data class User(
     val username: String = "",
@@ -29,7 +36,6 @@ data class Item(
 
 class FirebaseDatabaseHelper {
 
-    // Adds a new user to Firebase Realtime Database
     fun addUser(username: String, password: String, name: String, role: String, callback: (Boolean) -> Unit) {
         usersRef.child(username).get()
             .addOnSuccessListener { snapshot ->
@@ -102,7 +108,6 @@ class FirebaseDatabaseHelper {
         }
     }
 
-    // Function to fetch items from Firebase
     fun fetchItems(callback: (List<Item>) -> Unit) {
         itemsRef.get().addOnSuccessListener { snapshot ->
             val itemsList = mutableListOf<Item>()
@@ -115,6 +120,75 @@ class FirebaseDatabaseHelper {
             callback(itemsList)
         }.addOnFailureListener {
             callback(emptyList())
+        }
+    }
+
+    fun saveItem(item: Item, callback: (Boolean) -> Unit) {
+        val itemCode = item.itemCode
+        itemsRef.child(itemCode).setValue(item)
+            .addOnSuccessListener {
+                callback(true)
+            }
+            .addOnFailureListener {
+                callback(false)
+            }
+    }
+
+    fun doesProductNameExist(productName: String, callback: (Boolean) -> Unit) {
+        databaseReference.orderByChild("itemName").equalTo(productName).addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                callback(snapshot.exists())
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                callback(false)
+            }
+        })
+    }
+
+    fun getNextProductCode(category: String, callback: (String?) -> Unit) {
+        itemsRef.orderByChild("itemCategory").equalTo(category).get().addOnSuccessListener { snapshot ->
+
+            var maxCode = 0
+            var hasExistingCodes = false
+
+            for (itemSnapshot in snapshot.children) {
+                val item = itemSnapshot.getValue<Item>()
+                item?.let {
+
+                    val codeParts = it.itemCode.split("-")
+                    if (codeParts.size == 2 && codeParts[0] == getCategoryPrefix(category)) {
+                        hasExistingCodes = true
+                        val codeNumber = codeParts[1].toIntOrNull()
+                        if (codeNumber != null && codeNumber > maxCode) {
+                            maxCode = codeNumber
+                        }
+                    }
+                }
+            }
+
+            if (!hasExistingCodes) {
+                Log.d("FirebaseDatabaseHelper", "No product code found for category: $category")
+            }
+
+            val nextCode = maxCode + 1
+            val formattedCode = "${getCategoryPrefix(category)}-${String.format(Locale.US, "%03d", nextCode)}"
+
+            callback(formattedCode)
+        }.addOnFailureListener {
+            callback(null)
+        }
+    }
+
+    private fun getCategoryPrefix(category: String): String {
+        return when (category) {
+            "Syringes & Needles" -> "SYR"
+            "Dressings & Bandages" -> "DRS"
+            "Disinfectants & Antiseptics" -> "ANT"
+            "Personal Protective Equipment (PPE)" -> "PPE"
+            "Diagnostic Devices" -> "DGD"
+            else -> "UNK" // Unknown category
         }
     }
 
