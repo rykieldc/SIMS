@@ -50,20 +50,22 @@
 
                 <ImageView
                     android:id="@+id/itemImg"
-                    android:layout_width="match_parent"
+                    android:layout_width="200dp"
                     android:layout_height="200dp"
+                    android:layout_marginTop="5dp"
                     android:contentDescription="@string/item_image"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/sims_logo"
+                    android:background="@drawable/img_border"
+                    android:src="@drawable/ic_img_placeholder"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:ignore="ImageContrastCheck" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/itemName"
                     android:layout_width="250dp"
-                    android:layout_height="63dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
                     android:gravity="center|center_horizontal"
                     android:maxWidth="400dp"
                     android:padding="8dp"

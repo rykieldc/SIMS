@@ -42,12 +42,11 @@ class AddItemActivity : AppCompatActivity() {
     private lateinit var productCodeEditText: EditText
     private lateinit var productNameEditText: EditText
     private lateinit var unitsEditText: EditText
-    private lateinit var supplierEditText: EditText // New field for supplier
+    private lateinit var supplierEditText: EditText
     private lateinit var imageChooserLauncher: ActivityResultLauncher<Intent>
 
     private val calendar: Calendar = Calendar.getInstance()
 
-    // Track selections for spinners
     private var isCategorySelected = false
     private var isLocationSelected = false
 
@@ -63,7 +62,7 @@ class AddItemActivity : AppCompatActivity() {
         productCodeEditText = findViewById(R.id.uploadCode)
         productNameEditText = findViewById(R.id.uploadName)
         unitsEditText = findViewById(R.id.uploadUnits)
-        supplierEditText = findViewById(R.id.uploadSupplier) // Initialize supplier field
+        supplierEditText = findViewById(R.id.uploadSupplier)
         firebaseDatabaseHelper = FirebaseDatabaseHelper()
 
         uploadLastRestocked.isEnabled = false
@@ -104,7 +103,7 @@ class AddItemActivity : AppCompatActivity() {
 
     private fun validateInputs(): Boolean {
         if (uploadImg.drawable == null) {
-            uploadImg.setImageURI(null) // Set image value to an empty string
+            uploadImg.setImageURI(null)
         }
 
         if (productNameEditText.text.isNullOrEmpty()) {
@@ -215,7 +214,8 @@ class AddItemActivity : AppCompatActivity() {
                 stocksLeft = units ?: 0,
                 dateAdded = dateAdded,
                 lastRestocked = lastRestocked,
-                imageUrl = imageUri
+                imageUrl = imageUri,
+                enabled = true
             )
 
             firebaseDatabaseHelper.saveItem(item) { success ->
@@ -275,7 +275,7 @@ class AddItemActivity : AppCompatActivity() {
 
         val locationAdapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, locations) {
             override fun isEnabled(position: Int): Boolean {
-                return position != 0 // Disable the first item
+                return position != 0
             }
 
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
