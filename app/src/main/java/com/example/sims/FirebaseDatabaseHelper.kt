@@ -16,12 +16,15 @@ import java.util.Locale
 private val usersRef: DatabaseReference = Firebase.database.reference.child("users")
 private val itemsRef: DatabaseReference = Firebase.database.reference.child("items")
 private val databaseReference = FirebaseDatabase.getInstance().getReference("items")
+private val db = FirebaseDatabase.getInstance().getReference("users")
 
 data class User(
     val username: String = "",
     val password: String = "",
     val name: String = "",
-    val role: String = ""
+    val role: String = "",
+    val enabled: Boolean = true
+
 )
 
 data class Item(
@@ -83,9 +86,21 @@ class FirebaseDatabaseHelper {
         usersRef.child(username).get()
             .addOnSuccessListener { snapshot ->
                 if (snapshot.exists()) {
-                    callback(false)
+                    val existingUser = snapshot.getValue(User::class.java)
+                    if (existingUser != null && !existingUser.enabled) {
+                        callback(false)
+                    } else {
+                        val user = User(username, password, name, role, enabled = true)
+                        usersRef.child(username).setValue(user)
+                            .addOnSuccessListener {
+                                callback(true)
+                            }
+                            .addOnFailureListener {
+                                callback(false)
+                            }
+                    }
                 } else {
-                    val user = User(username, password, name, role)
+                    val user = User(username, password, name, role, enabled = true)
                     usersRef.child(username).setValue(user)
                         .addOnSuccessListener {
                             callback(true)
@@ -100,10 +115,16 @@ class FirebaseDatabaseHelper {
             }
     }
 
+
+
     fun checkUser(username: String, password: String, callback: (Boolean) -> Unit) {
         usersRef.child(username).get().addOnSuccessListener { snapshot ->
             val user = snapshot.getValue<User>()
-            callback(user?.password == password)
+            if (user != null && user.enabled) {
+                callback(user.password == password)
+            } else {
+                callback(false)
+            }
         }.addOnFailureListener {
             callback(false)
         }
@@ -116,7 +137,8 @@ class FirebaseDatabaseHelper {
                     val name = snapshot.child("name").getValue(String::class.java) ?: "Unknown"
                     val role = snapshot.child("role").getValue(String::class.java) ?: "Unknown"
                     val username = snapshot.child("username").getValue(String::class.java) ?: "Unknown"
-                    val user = User(name = name, username = username, role = role)
+                    val enabled = snapshot.child("enabled").getValue(Boolean::class.java) ?: false
+                    val user = User(name = name, username = username, role = role, enabled = enabled)
                     callback(user)
                 } else {
                     callback(User())
@@ -131,15 +153,18 @@ class FirebaseDatabaseHelper {
         usersRef.child(username).get().addOnSuccessListener { snapshot ->
             if (snapshot.exists()) {
                 val user = snapshot.getValue<User>()
-
-                if (user?.password == currentPassword) {
-                    usersRef.child(username).child("password").setValue(newPassword)
-                        .addOnSuccessListener {
-                            callback(true)
-                        }
-                        .addOnFailureListener {
-                            callback(false)
-                        }
+                if (user != null && user.enabled) {
+                    if (user.password == currentPassword) {
+                        usersRef.child(username).child("password").setValue(newPassword)
+                            .addOnSuccessListener {
+                                callback(true)
+                            }
+                            .addOnFailureListener {
+                                callback(false)
+                            }
+                    } else {
+                        callback(false)
+                    }
                 } else {
                     callback(false)
                 }
@@ -150,6 +175,51 @@ class FirebaseDatabaseHelper {
             callback(false)
         }
     }
+
+    fun fetchUsers(callback: (List<User>) -> Unit) {
+        usersRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val usersList = mutableListOf<User>()
+                for (userSnapshot in snapshot.children) {
+                    val user = userSnapshot.getValue(User::class.java)
+                    if (user != null && user.enabled) {
+                        usersList.add(user)
+                    } else {
+                        Log.e("FetchUsers", "User is null or not enabled: $userSnapshot")
+                    }
+                }
+                callback(usersList)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FetchUsers", "Failed to fetch users: ${error.message}")
+                callback(emptyList())
+            }
+        })
+    }
+
+    fun updateUser(userKey: String, user: User, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        db.child(userKey)
+            .setValue(user)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception.message ?: "Error updating user")
+            }
+    }
+
+    fun setUserEnabled(username: String, isEnabled: Boolean, callback: (Boolean) -> Unit) {
+        val usersRef = FirebaseDatabase.getInstance().getReference("users")
+
+        usersRef.child(username).child("enabled").setValue(isEnabled)
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+    }
+
+
+
+
 
     fun fetchItems(callback: (List<Item>) -> Unit) {
         itemsRef.addValueEventListener(object : ValueEventListener {

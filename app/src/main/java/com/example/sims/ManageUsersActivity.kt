@@ -1,5 +1,6 @@
 package com.example.sims
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -11,65 +12,45 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 class ManageUsersActivity : AppCompatActivity() {
 
     private lateinit var header: TextView
     private lateinit var firebaseHelper: FirebaseDatabaseHelper
+    private var recyclerView: RecyclerView? = null
+    private var recyclerViewUsersAdapter: RecyclerViewUsersAdapter? = null
+    private var userList = mutableListOf<User>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_manage_users)
 
         firebaseHelper = FirebaseDatabaseHelper()
 
         header = findViewById(R.id.header)
+        setupHeaderWithBackIcon()
 
-        val drawable = ContextCompat.getDrawable(this, R.drawable.ic_back_arrow_circle)
-        drawable?.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+        recyclerView = findViewById(R.id.rvViewUsers)
+        recyclerViewUsersAdapter = RecyclerViewUsersAdapter(this@ManageUsersActivity, userList)
 
-        val spannableString = SpannableString("  ${header.text}")
-        spannableString.setSpan(
-            ImageSpan(drawable!!, DynamicDrawableSpan.ALIGN_BASELINE),
-            0,
-            1,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-        spannableString.setSpan(
-            DrawableClickSpan { onBackPressedDispatcher.onBackPressed() },
-            0,
-            1,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-
-        header.text = spannableString
-        header.movementMethod = LinkMovementMethod.getInstance()
-
-        val addUserButton = findViewById<Button>(R.id.addUserBtn)
-        addUserButton.setOnClickListener {
-            showAddUserDialog()
+        recyclerView?.apply {
+            layoutManager = LinearLayoutManager(this@ManageUsersActivity)
+            adapter = recyclerViewUsersAdapter
         }
 
-        val editUserButton = findViewById<ImageButton>(R.id.editBtn)
-        editUserButton.setOnClickListener {
-            showEditUserDialog()
-        }
+        fetchUsersFromDatabase()
 
-        val deleteUserButton = findViewById<ImageButton>(R.id.deleteBtn)
-        deleteUserButton.setOnClickListener {
-            showDeleteUserDialog()
-        }
+        findViewById<Button>(R.id.addUserBtn).setOnClickListener { showAddUserDialog() }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -78,108 +59,85 @@ class ManageUsersActivity : AppCompatActivity() {
         }
     }
 
-    class DrawableClickSpan(private val clickListener: () -> Unit) : ClickableSpan() {
-        override fun onClick(widget: View) {
-            clickListener()
+    private fun setupHeaderWithBackIcon() {
+        val drawable = ContextCompat.getDrawable(this, R.drawable.ic_back_arrow_circle)
+        drawable?.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+        val spannableString = SpannableString("  ${header.text}").apply {
+            setSpan(ImageSpan(drawable!!, DynamicDrawableSpan.ALIGN_BASELINE), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            setSpan(DrawableClickSpan { onBackPressedDispatcher.onBackPressed() }, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        header.text = spannableString
+        header.movementMethod = LinkMovementMethod.getInstance()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        fetchUsersFromDatabase()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun fetchUsersFromDatabase() {
+        firebaseHelper.fetchUsers { fetchedUsers ->
+            userList.clear()
+
+            val enabledUsers = fetchedUsers.filter { user -> user.enabled }
+            enabledUsers.forEach { user ->
+                userList.add(user)
+            }
+
+            recyclerViewUsersAdapter?.notifyDataSetChanged()
         }
     }
 
     private fun showAddUserDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_user, null)
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setTitle("Add User")
-            .create()
+        val dialog = AlertDialog.Builder(this).setView(dialogView).setTitle("Add User").create()
 
         val nameEditText = dialogView.findViewById<EditText>(R.id.uploadName)
         val usernameEditText = dialogView.findViewById<EditText>(R.id.uploadUsername)
         val roleSpinner = dialogView.findViewById<Spinner>(R.id.uploadRole)
 
-        // Define role options
         val roles = arrayOf("Admin", "User")
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, roles)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         roleSpinner.adapter = adapter
 
-        val saveButton = dialogView.findViewById<Button>(R.id.saveBtn)
-        val cancelButton = dialogView.findViewById<Button>(R.id.cancelBtn)
-
-        saveButton.setOnClickListener {
+        dialogView.findViewById<Button>(R.id.saveBtn).setOnClickListener {
             val name = nameEditText.text.toString()
             val username = usernameEditText.text.toString()
             val selectedRole = roleSpinner.selectedItem.toString()
-
-            // Assign default password based on the selected role
             val password = if (selectedRole == "Admin") "admin_password" else "user_password"
 
             if (name.isNotBlank() && username.isNotBlank()) {
-                // Save user data to the database
-                addUserToDatabase(name, username, password, selectedRole)
-                dialog.dismiss() // Close dialog after saving
+                val isDuplicateUsername = userList.any { it.username == username }
+
+                if (isDuplicateUsername) {
+                    Toast.makeText(this, "Username already exists. Please choose a different username.", Toast.LENGTH_SHORT).show()
+                } else {
+                    addUserToDatabase(name, username, password, selectedRole)
+                    dialog.dismiss()
+                }
             } else {
-                // Show error if fields are incomplete
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
             }
         }
 
-        cancelButton.setOnClickListener {
-            dialog.dismiss() // Close dialog on cancel
-        }
-
+        dialogView.findViewById<Button>(R.id.cancelBtn).setOnClickListener { dialog.dismiss() }
         dialog.show()
     }
 
     private fun addUserToDatabase(name: String, username: String, password: String, role: String) {
-
         firebaseHelper.addUser(username, password, name, role) { success ->
-            if (success) {
-                Toast.makeText(this, "User added successfully!", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Error adding user to database. Username may already exist.", Toast.LENGTH_SHORT).show()
-            }
+            Toast.makeText(
+                this,
+                if (success) "User added successfully!" else "Error adding user to database. Username may already exist.",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
-    private fun showEditUserDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_edit_user, null)
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setTitle("Edit User")
-            .create()
-
-        val saveButton = dialogView.findViewById<Button>(R.id.saveBtn)
-        val cancelButton = dialogView.findViewById<Button>(R.id.cancelBtn)
-
-        saveButton.setOnClickListener {
-
-            dialog.dismiss()
+    class DrawableClickSpan(private val clickListener: () -> Unit) : ClickableSpan() {
+        override fun onClick(widget: View) {
+            clickListener()
         }
-
-        cancelButton.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        dialog.show()
-    }
-
-    private fun showDeleteUserDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_delete_user, null)
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .create()
-
-        val yesButton = dialogView.findViewById<Button>(R.id.yesBtn)
-        val noButton = dialogView.findViewById<Button>(R.id.noBtn)
-
-        yesButton.setOnClickListener {
-
-            dialog.dismiss()
-        }
-
-        noButton.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        dialog.show()
     }
 }
