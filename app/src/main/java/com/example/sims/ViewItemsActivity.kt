@@ -1,5 +1,8 @@
 package com.example.sims
 
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -16,6 +19,10 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class ViewItemsActivity : AppCompatActivity() {
+
+    companion object {
+        private const val REQUEST_CODE_VIEW_ITEM_DETAILS = 1001
+    }
 
     private lateinit var header: TextView
     private var recyclerView: RecyclerView? = null
@@ -58,7 +65,6 @@ class ViewItemsActivity : AppCompatActivity() {
         recyclerView!!.layoutManager = layoutManager
         recyclerView!!.adapter = recyclerViewProductAdapter
 
-        // Fetch items from the database
         fetchItemsFromDatabase()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -68,17 +74,40 @@ class ViewItemsActivity : AppCompatActivity() {
         }
     }
 
-    // Function to fetch items from Firebase
+    override fun onResume() {
+        super.onResume()
+        fetchItemsFromDatabase()
+    }
+
+    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_VIEW_ITEM_DETAILS && resultCode == Activity.RESULT_OK) {
+            fetchItemsFromDatabase()
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
     private fun fetchItemsFromDatabase() {
         val databaseHelper = FirebaseDatabaseHelper()
         databaseHelper.fetchItems { itemsList ->
-            val previousSize = productList.size
             productList.clear()
             productList.addAll(itemsList.map { item ->
-                Product(item.supplier, item.itemName, "${item.stocksLeft} units", item.imageUrl)
+                Product(
+                    itemCode = item.itemCode,
+                    itemName = item.itemName,
+                    itemCategory = item.itemCategory,
+                    location = item.location,
+                    supplier = item.supplier,
+                    stocksLeft = "${item.stocksLeft} units",
+                    dateAdded = item.dateAdded,
+                    lastRestocked = item.lastRestocked,
+                    imageUrl = item.imageUrl
+                )
             })
 
-            recyclerViewProductAdapter?.notifyItemRangeInserted(previousSize, productList.size - previousSize)
+            recyclerViewProductAdapter?.notifyDataSetChanged()
         }
     }
+
 }

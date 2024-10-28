@@ -102,4 +102,5 @@
     <string name="user_admin">admin</string>
     <string name="save_changes">Are you sure you want to save changes?</string>
     <string name="cancel_prompt">All unsaved changes will be lost. Are you sure you want to proceed?</string>
+    <string name="delete_product">Are you sure you want to delete this item?</string>
 </resources>

@@ -19,7 +19,6 @@ class AdminDashboard : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_admin_dashboard, container, false)
     }
 
@@ -47,7 +46,7 @@ class AdminDashboard : Fragment() {
         }
 
         editItemCardView.setOnClickListener {
-            val intent = Intent(requireContext(), EditItemActivity::class.java)
+            val intent = Intent(requireContext(), ViewItemsActivity::class.java)
             startActivity(intent)
         }
 
@@ -57,7 +56,7 @@ class AdminDashboard : Fragment() {
         }
 
         deleteItemCardView.setOnClickListener {
-            val intent = Intent(requireContext(), ViewItemDetailsActivity::class.java)
+            val intent = Intent(requireContext(), ViewItemsActivity::class.java)
             startActivity(intent)
         }
 
