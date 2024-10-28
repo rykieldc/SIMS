@@ -3,20 +3,28 @@ package com.example.sims
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
-import com.google.firebase.database.*
+import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.database
+import com.google.firebase.database.getValue
 import java.util.Locale
 
+private val usersRef: DatabaseReference = Firebase.database.reference.child("users")
+private val itemsRef: DatabaseReference = Firebase.database.reference.child("items")
+private val databaseReference = FirebaseDatabase.getInstance().getReference("items")
+private val db = FirebaseDatabase.getInstance().getReference("users")
 
 data class User(
     val username: String = "",
     val password: String = "",
     val name: String = "",
-    val role: String = ""
+    val role: String = "",
+    val enabled: Boolean = true
+
 )
 
 data class Item(
@@ -74,16 +82,25 @@ data class Item(
 
 class FirebaseDatabaseHelper {
 
-    private val usersRef: DatabaseReference = FirebaseDatabase.getInstance().getReference("users")
-    private val itemsRef: DatabaseReference = FirebaseDatabase.getInstance().getReference("items")
-
     fun addUser(username: String, password: String, name: String, role: String, callback: (Boolean) -> Unit) {
         usersRef.child(username).get()
             .addOnSuccessListener { snapshot ->
                 if (snapshot.exists()) {
-                    callback(false)
+                    val existingUser = snapshot.getValue(User::class.java)
+                    if (existingUser != null && !existingUser.enabled) {
+                        callback(false)
+                    } else {
+                        val user = User(username, password, name, role, enabled = true)
+                        usersRef.child(username).setValue(user)
+                            .addOnSuccessListener {
+                                callback(true)
+                            }
+                            .addOnFailureListener {
+                                callback(false)
+                            }
+                    }
                 } else {
-                    val user = User(username, password, name, role)
+                    val user = User(username, password, name, role, enabled = true)
                     usersRef.child(username).setValue(user)
                         .addOnSuccessListener {
                             callback(true)
@@ -98,37 +115,111 @@ class FirebaseDatabaseHelper {
             }
     }
 
+
+
     fun checkUser(username: String, password: String, callback: (Boolean) -> Unit) {
         usersRef.child(username).get().addOnSuccessListener { snapshot ->
             val user = snapshot.getValue<User>()
-            callback(user?.password == password)
+            if (user != null && user.enabled) {
+                callback(user.password == password)
+            } else {
+                callback(false)
+            }
         }.addOnFailureListener {
             callback(false)
         }
     }
 
-    fun getUser(username: String, callback: (User?) -> Unit) {
-        usersRef.child(username).get()
+    fun checkUserData(userKey: String, callback: (User) -> Unit) {
+        usersRef.child(userKey).get()
             .addOnSuccessListener { snapshot ->
-                val user = snapshot.getValue(User::class.java)
-                callback(user)
+                if (snapshot.exists()) {
+                    val name = snapshot.child("name").getValue(String::class.java) ?: "Unknown"
+                    val role = snapshot.child("role").getValue(String::class.java) ?: "Unknown"
+                    val username = snapshot.child("username").getValue(String::class.java) ?: "Unknown"
+                    val enabled = snapshot.child("enabled").getValue(Boolean::class.java) ?: false
+                    val user = User(name = name, username = username, role = role, enabled = enabled)
+                    callback(user)
+                } else {
+                    callback(User())
+                }
             }
             .addOnFailureListener {
-                callback(null)
+                callback(User())
             }
     }
 
-    fun updateUser(username: String, updatedUser: User, callback: (Boolean) -> Unit) {
-        usersRef.child(username).setValue(updatedUser).addOnCompleteListener { task ->
-            callback(task.isSuccessful)
+    fun changeUserPassword(username: String, currentPassword: String, newPassword: String, callback: (Boolean) -> Unit) {
+        usersRef.child(username).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val user = snapshot.getValue<User>()
+                if (user != null && user.enabled) {
+                    if (user.password == currentPassword) {
+                        usersRef.child(username).child("password").setValue(newPassword)
+                            .addOnSuccessListener {
+                                callback(true)
+                            }
+                            .addOnFailureListener {
+                                callback(false)
+                            }
+                    } else {
+                        callback(false)
+                    }
+                } else {
+                    callback(false)
+                }
+            } else {
+                callback(false)
+            }
+        }.addOnFailureListener {
+            callback(false)
         }
     }
 
-    fun deleteUser(username: String, callback: (Boolean) -> Unit) {
-        usersRef.child(username).removeValue().addOnCompleteListener { task ->
-            callback(task.isSuccessful)
-        }
+    fun fetchUsers(callback: (List<User>) -> Unit) {
+        usersRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val usersList = mutableListOf<User>()
+                for (userSnapshot in snapshot.children) {
+                    val user = userSnapshot.getValue(User::class.java)
+                    if (user != null && user.enabled) {
+                        usersList.add(user)
+                    } else {
+                        Log.e("FetchUsers", "User is null or not enabled: $userSnapshot")
+                    }
+                }
+                callback(usersList)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FetchUsers", "Failed to fetch users: ${error.message}")
+                callback(emptyList())
+            }
+        })
     }
+
+    fun updateUser(userKey: String, user: User, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        db.child(userKey)
+            .setValue(user)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception.message ?: "Error updating user")
+            }
+    }
+
+    fun setUserEnabled(username: String, isEnabled: Boolean, callback: (Boolean) -> Unit) {
+        val usersRef = FirebaseDatabase.getInstance().getReference("users")
+
+        usersRef.child(username).child("enabled").setValue(isEnabled)
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+    }
+
+
+
+
 
     fun fetchItems(callback: (List<Item>) -> Unit) {
         itemsRef.addValueEventListener(object : ValueEventListener {
@@ -205,7 +296,7 @@ class FirebaseDatabaseHelper {
 
 
     fun doesProductNameExist(productName: String, callback: (Boolean) -> Unit) {
-        itemsRef.orderByChild("itemName").equalTo(productName).addListenerForSingleValueEvent(object :
+        databaseReference.orderByChild("itemName").equalTo(productName).addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val exists = snapshot.children.any { it.child("enabled").getValue(Boolean::class.java) == true }
@@ -220,12 +311,14 @@ class FirebaseDatabaseHelper {
 
     fun getNextProductCode(category: String, callback: (String?) -> Unit) {
         itemsRef.orderByChild("itemCategory").equalTo(category).get().addOnSuccessListener { snapshot ->
+
             var maxCode = 0
             var hasExistingCodes = false
 
             for (itemSnapshot in snapshot.children) {
                 val item = itemSnapshot.getValue<Item>()
                 item?.let {
+
                     val codeParts = it.itemCode.split("-")
                     if (codeParts.size == 2 && codeParts[0] == getCategoryPrefix(category)) {
                         hasExistingCodes = true
@@ -260,27 +353,6 @@ class FirebaseDatabaseHelper {
             else -> "UNK"
         }
     }
-    fun changeUserPassword(username: String, currentPassword: String, newPassword: String, callback: (Boolean) -> Unit) {
-        usersRef.child(username).get().addOnSuccessListener { snapshot ->
-            if (snapshot.exists()) {
-                val user = snapshot.getValue<User>()
 
-                if (user?.password == currentPassword) {
-                    usersRef.child(username).child("password").setValue(newPassword)
-                        .addOnSuccessListener {
-                            callback(true)
-                        }
-                        .addOnFailureListener {
-                            callback(false)
-                        }
-                } else {
-                    callback(false)
-                }
-            } else {
-                callback(false)
-            }
-        }.addOnFailureListener {
-            callback(false)
-        }
-    }
+
 }
