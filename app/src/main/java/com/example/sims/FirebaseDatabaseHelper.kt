@@ -1,5 +1,7 @@
 package com.example.sims
 
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.Log
 import com.google.firebase.database.*
 import com.google.firebase.database.DataSnapshot
@@ -18,16 +20,57 @@ data class User(
 )
 
 data class Item(
-    val itemCode: String = "",
-    val itemName: String = "",
-    val itemCategory: String = "",
-    val location: String = "",
-    val supplier: String = "",
-    val stocksLeft: Int = 0,
-    val dateAdded: String = "",
-    val lastRestocked: String = "",
-    val imageUrl: String = ""
-)
+    var itemCode: String = "",
+    var itemName: String = "",
+    var itemCategory: String = "",
+    var location: String = "",
+    var supplier: String = "",
+    var stocksLeft: Int = 0,
+    var dateAdded: String = "",
+    var lastRestocked: String = "",
+    var enabled: Boolean = true,
+    var imageUrl: String = ""
+) : Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readInt(),
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readByte() != 0.toByte(),
+        parcel.readString() ?: ""
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(itemCode)
+        parcel.writeString(itemName)
+        parcel.writeString(itemCategory)
+        parcel.writeString(location)
+        parcel.writeString(supplier)
+        parcel.writeInt(stocksLeft)
+        parcel.writeString(dateAdded)
+        parcel.writeString(lastRestocked)
+        parcel.writeByte(if (enabled) 1 else 0)
+        parcel.writeString(imageUrl)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<Item> {
+        override fun createFromParcel(parcel: Parcel): Item {
+            return Item(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Item?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
 
 class FirebaseDatabaseHelper {
 
@@ -88,19 +131,28 @@ class FirebaseDatabaseHelper {
     }
 
     fun fetchItems(callback: (List<Item>) -> Unit) {
-        itemsRef.get().addOnSuccessListener { snapshot ->
-            val itemsList = mutableListOf<Item>()
-            for (itemSnapshot in snapshot.children) {
-                val item = itemSnapshot.getValue<Item>()
-                if (item != null) {
-                    itemsList.add(item)
+        itemsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val itemsList = mutableListOf<Item>()
+                for (itemSnapshot in snapshot.children) {
+                    val item = itemSnapshot.getValue(Item::class.java)
+                    if (item != null && item.enabled) {
+                        itemsList.add(item)
+                    } else {
+                        Log.e("FetchItems", "Item is null or not enabled: $itemSnapshot")
+                    }
                 }
+                callback(itemsList)
             }
-            callback(itemsList)
-        }.addOnFailureListener {
-            callback(emptyList())
-        }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FetchItems", "Failed to fetch items: ${error.message}")
+                callback(emptyList())
+            }
+        })
     }
+
+
 
     fun saveItem(item: Item, callback: (Boolean) -> Unit) {
         val itemCode = item.itemCode
@@ -113,11 +165,51 @@ class FirebaseDatabaseHelper {
             }
     }
 
+    fun updateItem(productCode: String, item: Item, callback: (Boolean) -> Unit) {
+        itemsRef.child(productCode).setValue(item)
+            .addOnSuccessListener {
+                callback(true)
+            }
+            .addOnFailureListener {
+                callback(false)
+            }
+    }
+
+    fun setItemEnabled(itemCode: String, isEnabled: Boolean, callback: (Boolean) -> Unit) {
+        itemsRef.child(itemCode).child("enabled").setValue(isEnabled)
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+    }
+
+    fun doesProductNameExistExcludingCurrent(
+        productName: String,
+        currentProductName: String,
+        callback: (Boolean) -> Unit
+    ) {
+        databaseReference.orderByChild("itemName").equalTo(productName).addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val exists = snapshot.children.any {
+                    it.child("enabled").getValue(Boolean::class.java) == true &&
+                            it.child("itemName").getValue(String::class.java) != currentProductName
+                }
+                callback(exists)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                callback(false)
+            }
+        })
+    }
+
+
+
     fun doesProductNameExist(productName: String, callback: (Boolean) -> Unit) {
         itemsRef.orderByChild("itemName").equalTo(productName).addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                callback(snapshot.exists())
+                val exists = snapshot.children.any { it.child("enabled").getValue(Boolean::class.java) == true }
+                callback(exists)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -165,7 +257,7 @@ class FirebaseDatabaseHelper {
             "Disinfectants & Antiseptics" -> "ANT"
             "Personal Protective Equipment (PPE)" -> "PPE"
             "Diagnostic Devices" -> "DGD"
-            else -> "UNK" // Unknown category
+            else -> "UNK"
         }
     }
     fun changeUserPassword(username: String, currentPassword: String, newPassword: String, callback: (Boolean) -> Unit) {

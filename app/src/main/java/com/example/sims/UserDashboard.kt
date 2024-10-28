@@ -19,7 +19,6 @@ class UserDashboard : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_user_dashboard, container, false)
     }
 
@@ -34,20 +33,18 @@ class UserDashboard : Fragment() {
         val usernameTextView = view.findViewById<TextView>(R.id.header_dashboard)
         usernameTextView.text = getString(R.string.greetings, userName)
 
-        // Find card views by their IDs
         val addItemCardView = view.findViewById<CardView>(R.id.cvAddItem)
         val editItemCardView = view.findViewById<CardView>(R.id.cvEditItem)
         val viewItemCardView = view.findViewById<CardView>(R.id.cvViewItem)
         val deleteItemCardView = view.findViewById<CardView>(R.id.cvDeleteItem)
 
-        // Set click listeners for each card view to start the corresponding activity
         addItemCardView.setOnClickListener {
             val intent = Intent(requireContext(), AddItemActivity::class.java)
             startActivity(intent)
         }
 
         editItemCardView.setOnClickListener {
-            val intent = Intent(requireContext(), EditItemActivity::class.java)
+            val intent = Intent(requireContext(), ViewItemsActivity::class.java)
             startActivity(intent)
         }
 
@@ -57,7 +54,7 @@ class UserDashboard : Fragment() {
         }
 
         deleteItemCardView.setOnClickListener {
-            val intent = Intent(requireContext(), ViewItemDetailsActivity::class.java)
+            val intent = Intent(requireContext(), ViewItemsActivity::class.java)
             startActivity(intent)
         }
     }
