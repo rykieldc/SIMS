@@ -7,14 +7,17 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
 @Suppress("DEPRECATION")
 class RecyclerViewProductAdapter(
     private val getActivity: ViewItemsActivity,
-    private val productList: List<Product>
+    private var productList: MutableList<Product> = ArrayList()
 ) : RecyclerView.Adapter<RecyclerViewProductAdapter.ProductViewHolder>() {
+
+    var originalList = productList.toMutableList()
 
     companion object {
         private const val REQUEST_CODE_VIEW_ITEM_DETAILS = 1001
@@ -43,19 +46,39 @@ class RecyclerViewProductAdapter(
         holder.productNum.text = product.stocksLeft
 
         holder.cardView.setOnClickListener {
-            val intent = Intent(holder.itemView.context, ViewItemDetailsActivity::class.java).apply {
-                putExtra("productImg", product.imageUrl)
-                putExtra("productName", product.itemName)
-                putExtra("productSupplier", product.supplier)
-                putExtra("productNum", product.stocksLeft)
-                putExtra("productCode", product.itemCode)
-                putExtra("productCategory", product.itemCategory)
-                putExtra("productLocation", product.location)
-                putExtra("dateAdded", product.dateAdded)
-                putExtra("lastRestocked", product.lastRestocked)
-            }
+            val intent =
+                Intent(holder.itemView.context, ViewItemDetailsActivity::class.java).apply {
+                    putExtra("productImg", product.imageUrl)
+                    putExtra("productName", product.itemName)
+                    putExtra("productSupplier", product.supplier)
+                    putExtra("productNum", product.stocksLeft)
+                    putExtra("productCode", product.itemCode)
+                    putExtra("productCategory", product.itemCategory)
+                    putExtra("productLocation", product.location)
+                    putExtra("dateAdded", product.dateAdded)
+                    putExtra("lastRestocked", product.lastRestocked)
+                }
             getActivity.startActivityForResult(intent, REQUEST_CODE_VIEW_ITEM_DETAILS)
         }
+    }
+
+    fun filter(query: String) {
+        val filteredList = originalList.filter { product ->
+            product.itemName.lowercase().contains(query.lowercase())
+        }
+        val diffCallback = ProductDiffCallback(productList, filteredList)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        productList.clear()
+        productList.addAll(filteredList)
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    fun resetList() {
+        val diffCallback = ProductDiffCallback(productList, originalList)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        (productList as MutableList<Product>).clear()
+        (productList as MutableList<Product>).addAll(originalList)
+        diffResult.dispatchUpdatesTo(this)
     }
 
     class ProductViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -64,5 +87,14 @@ class RecyclerViewProductAdapter(
         val productName: TextView = itemView.findViewById(R.id.product_name)
         val productNum: TextView = itemView.findViewById(R.id.product_num)
         val cardView: CardView = itemView.findViewById(R.id.productCardView)
+    }
+
+    class ProductDiffCallback(private val oldList: List<Product>, private val newList: List<Product>) : DiffUtil.Callback() {
+        override fun getOldListSize(): Int = oldList.size
+        override fun getNewListSize(): Int = newList.size
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+            oldList[oldItemPosition].itemCode == newList[newItemPosition].itemCode
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+            oldList[oldItemPosition] == newList[newItemPosition]
     }
 }

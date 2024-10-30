@@ -9,6 +9,7 @@ import android.text.SpannableString
 import android.text.method.LinkMovementMethod
 import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
+import android.widget.SearchView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +26,7 @@ class ViewItemsActivity : AppCompatActivity() {
     }
 
     private lateinit var header: TextView
+    private lateinit var searchView: SearchView
     private var recyclerView: RecyclerView? = null
     private var recyclerViewProductAdapter: RecyclerViewProductAdapter? = null
     private var productList = mutableListOf<Product>()
@@ -56,7 +58,6 @@ class ViewItemsActivity : AppCompatActivity() {
         header.text = spannableString
         header.movementMethod = LinkMovementMethod.getInstance()
 
-
         productList = ArrayList()
         recyclerView = findViewById(R.id.rvViewItems)!!
         recyclerViewProductAdapter = RecyclerViewProductAdapter(this@ViewItemsActivity, productList)
@@ -66,6 +67,24 @@ class ViewItemsActivity : AppCompatActivity() {
         recyclerView!!.adapter = recyclerViewProductAdapter
 
         fetchItemsFromDatabase()
+
+
+        searchView = findViewById(R.id.searchProduct)
+        searchView.clearFocus()
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                if (newText.isEmpty()) {
+                    recyclerViewProductAdapter?.resetList() // Reset list when query is empty
+                } else {
+                    recyclerViewProductAdapter?.filter(newText) // Filter list when query is not empty
+                }
+                return true
+            }
+        })
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -106,8 +125,11 @@ class ViewItemsActivity : AppCompatActivity() {
                 )
             })
 
-            recyclerViewProductAdapter?.notifyDataSetChanged()
+            recyclerViewProductAdapter?.apply {
+                originalList.clear()
+                originalList.addAll(productList)
+                notifyDataSetChanged()
+            }
         }
     }
-
 }

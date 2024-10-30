@@ -43,42 +43,29 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <LinearLayout
-                    android:id="@+id/search_field"
-                    android:layout_width="322dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginEnd="8dp"
+                <SearchView
+                    android:id="@+id/searchProduct"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxWidth="488dp"
+                    android:autofillHints="productName"
                     android:background="@drawable/bg_button"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/searchBtn"
-                        android:layout_width="46dp"
-                        android:layout_height="48dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="@string/ic_search"
-                        android:padding="6dp"
-                        app:srcCompat="@drawable/ic_search" />
-
-                    <EditText
-                        android:id="@+id/searchProduct"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:autofillHints="productName"
-                        android:background="@drawable/bg_button"
-                        android:ems="10"
-                        android:hint="@string/search_product"
-                        android:inputType="text"
-                        android:paddingStart="6dp"
-                        android:paddingEnd="6dp"
-                        android:textColorHint="#757575" />
-                </LinearLayout>
+                    android:ems="10"
+                    android:inputType="text"
+                    android:queryHint="@string/search_product"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="54dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/filterBtn"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:iconifiedByDefault="false"/>
 
                 <ImageView
                     android:id="@+id/filterBtn"
@@ -87,9 +74,12 @@
                     android:background="@drawable/bg_button"
                     android:contentDescription="@string/ic_filter"
                     android:padding="6dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/ic_filter" />
 
-            </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
