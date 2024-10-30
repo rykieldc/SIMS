@@ -78,9 +78,9 @@ class ViewItemsActivity : AppCompatActivity() {
 
             override fun onQueryTextChange(newText: String): Boolean {
                 if (newText.isEmpty()) {
-                    recyclerViewProductAdapter?.resetList() // Reset list when query is empty
+                    recyclerViewProductAdapter?.resetList()
                 } else {
-                    recyclerViewProductAdapter?.filter(newText) // Filter list when query is not empty
+                    recyclerViewProductAdapter?.filter(newText)
                 }
                 return true
             }

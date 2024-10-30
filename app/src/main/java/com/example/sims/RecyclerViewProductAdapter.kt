@@ -76,8 +76,8 @@ class RecyclerViewProductAdapter(
     fun resetList() {
         val diffCallback = ProductDiffCallback(productList, originalList)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
-        (productList as MutableList<Product>).clear()
-        (productList as MutableList<Product>).addAll(originalList)
+        (productList).clear()
+        (productList).addAll(originalList)
         diffResult.dispatchUpdatesTo(this)
     }
 
