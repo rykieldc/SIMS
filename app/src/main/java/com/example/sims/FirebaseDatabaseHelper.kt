@@ -1,5 +1,6 @@
 package com.example.sims
 
+import SessionManager
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
@@ -11,9 +12,12 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 private val usersRef: DatabaseReference = Firebase.database.reference.child("users")
+private val historyRef: DatabaseReference = Firebase.database.reference.child("history")
 private val itemsRef: DatabaseReference = Firebase.database.reference.child("items")
 private val databaseReference = FirebaseDatabase.getInstance().getReference("items")
 private val db = FirebaseDatabase.getInstance().getReference("users")
@@ -25,6 +29,12 @@ data class User(
     val role: String = "",
     val enabled: Boolean = true
 
+)
+
+data class History(
+    val action: String = "",
+    val date: String = "",
+    val name: String = ""
 )
 
 data class Item(
@@ -121,6 +131,7 @@ class FirebaseDatabaseHelper {
         usersRef.child(username).get().addOnSuccessListener { snapshot ->
             val user = snapshot.getValue<User>()
             if (user != null && user.enabled) {
+                SessionManager.saveUsername(username)
                 callback(user.password == password)
             } else {
                 callback(false)
@@ -218,6 +229,36 @@ class FirebaseDatabaseHelper {
     }
 
 
+    private fun recordHistory(date: String, name: String, action: String, callback: (Boolean) -> Unit) {
+        val historyId = historyRef.push().key ?: ""
+        val history = History(date, name, action)
+
+        historyRef.child(historyId).setValue(history)
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+    }
+
+    fun fetchHistory(callback: (List<History>) -> Unit) {
+        historyRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val historyList = mutableListOf<History>()
+                for (historySnapshot in snapshot.children) {
+                    val history = historySnapshot.getValue(History::class.java)
+                    if (history != null) {
+                        historyList.add(history)
+                    } else {
+                        Log.e("FetchHistory", "History record is null: $historySnapshot")
+                    }
+                }
+                callback(historyList)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FetchHistory", "Failed to fetch history: ${error.message}")
+                callback(emptyList())
+            }
+        })
+    }
 
 
 
@@ -249,7 +290,15 @@ class FirebaseDatabaseHelper {
         val itemCode = item.itemCode
         itemsRef.child(itemCode).setValue(item)
             .addOnSuccessListener {
-                callback(true)
+                val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
+                val action = "Added Item [${item.itemName}]"
+                recordHistory(date, SessionManager.getUsername() ?: "Unknown", action) { historySuccess ->
+                    if (historySuccess) {
+                        callback(true)
+                    } else {
+                        callback(false)
+                    }
+                }
             }
             .addOnFailureListener {
                 callback(false)
@@ -259,7 +308,15 @@ class FirebaseDatabaseHelper {
     fun updateItem(productCode: String, item: Item, callback: (Boolean) -> Unit) {
         itemsRef.child(productCode).setValue(item)
             .addOnSuccessListener {
-                callback(true)
+                val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
+                val action = "Edited Item [${item.itemName}]"
+                recordHistory(date, SessionManager.getUsername() ?: "Unknown", action) { historySuccess ->
+                    if (historySuccess) {
+                        callback(true)
+                    } else {
+                        callback(false)
+                    }
+                }
             }
             .addOnFailureListener {
                 callback(false)
@@ -267,10 +324,28 @@ class FirebaseDatabaseHelper {
     }
 
     fun setItemEnabled(itemCode: String, isEnabled: Boolean, callback: (Boolean) -> Unit) {
-        itemsRef.child(itemCode).child("enabled").setValue(isEnabled)
-            .addOnSuccessListener { callback(true) }
-            .addOnFailureListener { callback(false) }
+        itemsRef.child(itemCode).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val itemName = snapshot.child("itemName").value?.toString() ?: "Unknown Item"
+                itemsRef.child(itemCode).child("enabled").setValue(isEnabled)
+                    .addOnSuccessListener {
+                        val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
+                        val action = "Deleted Item [$itemName]"
+                        recordHistory(date, SessionManager.getUsername() ?: "Unknown", action) { historySuccess ->
+                            callback(historySuccess)
+                        }
+                    }
+                    .addOnFailureListener {
+                        callback(false)
+                    }
+            } else {
+                callback(false)
+            }
+        }.addOnFailureListener {
+            callback(false)
+        }
     }
+
 
     fun doesProductNameExistExcludingCurrent(
         productName: String,
