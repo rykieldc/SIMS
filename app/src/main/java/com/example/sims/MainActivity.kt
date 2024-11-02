@@ -1,6 +1,7 @@
 package com.example.sims
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -21,6 +22,15 @@ class MainActivity : AppCompatActivity() {
 
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+
+        val dbHelper = FirebaseDatabaseHelper()
+        dbHelper.fetchCategories { success ->
+            if (success) {
+                Log.d("MainActivity", "Categories loaded successfully")
+            } else {
+                Log.e("MainActivity", "Failed to load categories")
+            }
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

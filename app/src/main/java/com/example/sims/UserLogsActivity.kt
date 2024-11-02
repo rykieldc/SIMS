@@ -30,7 +30,7 @@ class UserLogsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_view_items)
+        setContentView(R.layout.activity_user_logs)
 
         header = findViewById(R.id.header)
 
@@ -65,10 +65,10 @@ class UserLogsActivity : AppCompatActivity() {
     }
 
     private fun initializeRecyclerView() {
-        recyclerView = findViewById(R.id.rvViewItems)
-        recyclerViewUserLogsAdapter = RecyclerViewUserLogsAdapter(this, userLogList)
+        recyclerView = findViewById(R.id.rvViewUserLogs)
+        recyclerViewUserLogsAdapter = RecyclerViewUserLogsAdapter(userLogList)
 
-        recyclerView.layoutManager = GridLayoutManager(this, 2)
+        recyclerView.layoutManager = GridLayoutManager(this, 1)
         recyclerView.adapter = recyclerViewUserLogsAdapter
     }
 

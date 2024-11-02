@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="wrap_content">
 
     <TableRow
+        android:id="@+id/trLogs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/gr_lower">
@@ -17,7 +18,7 @@
             android:textColor="@color/black"
             android:layout_width="0dp"
             android:layout_height="50dp"
-            android:layout_weight="0.5"
+            android:layout_weight="0.8"
             android:padding="6dp"
             android:gravity="center_vertical"/>
 
@@ -30,6 +31,8 @@
             android:layout_height="50dp"
             android:layout_weight="1"
             android:padding="6dp"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:gravity="start|center_vertical"/>
 
         <TextView
@@ -40,51 +43,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1.2"
-            android:maxLines="2"
+            android:maxLines="1"
             android:ellipsize="end"
             android:padding="6dp"
             android:gravity="start|center_vertical"
             tools:ignore="VisualLintBounds" />
     </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/gr_upper"
-        >
-
-        <TextView
-            android:text="@string/sample_date_added"
-            android:fontFamily="@font/poppins_bold"
-            android:textColor="@color/black"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="0.5"
-            android:padding="6dp"
-            android:gravity="center_vertical"/>
-
-        <TextView
-            android:text="@string/user_name"
-            android:fontFamily="@font/poppins_bold"
-            android:textColor="@color/black"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:padding="6dp"
-            android:gravity="start|center_vertical"/>
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1.2"
-            android:fontFamily="@font/poppins_bold"
-            android:gravity="start|center_vertical"
-            android:padding="6dp"
-            android:maxLines="2"
-            android:ellipsize="end"
-            android:text="@string/sample_log2"
-            android:textColor="@color/black"
-            tools:ignore="VisualLintBounds" />
-    </TableRow>
-
-</LinearLayout>
+</ScrollView>

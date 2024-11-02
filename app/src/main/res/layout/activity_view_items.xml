@@ -54,7 +54,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:maxWidth="488dp"
-                    android:autofillHints="productName"
                     android:background="@drawable/bg_button"
                     android:ems="10"
                     android:inputType="text"

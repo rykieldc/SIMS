@@ -19,6 +19,8 @@ import java.util.Locale
 private val usersRef: DatabaseReference = Firebase.database.reference.child("users")
 private val historyRef: DatabaseReference = Firebase.database.reference.child("history")
 private val itemsRef: DatabaseReference = Firebase.database.reference.child("items")
+private val categoriesRef: DatabaseReference = Firebase.database.reference.child("categories")
+private val locationsRef: DatabaseReference = Firebase.database.reference.child("locations")
 private val databaseReference = FirebaseDatabase.getInstance().getReference("items")
 private val db = FirebaseDatabase.getInstance().getReference("users")
 
@@ -418,16 +420,102 @@ class FirebaseDatabaseHelper {
         }
     }
 
+    private var categoryPrefixMap: Map<String, String> = emptyMap()
+
     private fun getCategoryPrefix(category: String): String {
-        return when (category) {
-            "Syringes & Needles" -> "SYR"
-            "Dressings & Bandages" -> "DRS"
-            "Disinfectants & Antiseptics" -> "ANT"
-            "Personal Protective Equipment (PPE)" -> "PPE"
-            "Diagnostic Devices" -> "DGD"
-            else -> "UNK"
+        return categoryPrefixMap[category] ?: "UNK"
+    }
+
+    fun fetchCategories(callback: (Boolean) -> Unit) {
+        categoriesRef.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val categoriesMap = mutableMapOf<String, String>()
+                for (categorySnapshot in snapshot.children) {
+                    val code = categorySnapshot.key ?: continue
+                    val name = categorySnapshot.getValue(String::class.java) ?: continue
+                    categoriesMap[name] = code
+                }
+                categoryPrefixMap = categoriesMap
+                callback(true)  // Successfully fetched categories
+            } else {
+                callback(false)  // No categories found
+            }
+        }.addOnFailureListener {
+            callback(false)  // Failed to fetch categories
         }
     }
+
+    fun fetchLocationsList(callback: (List<String>) -> Unit) {
+        locationsRef.get().addOnSuccessListener { snapshot ->
+            val locationsList = mutableListOf<String>()
+            for (child in snapshot.children) {
+                child.getValue(String::class.java)?.let { locationsList.add(it) }
+            }
+            callback(locationsList)
+        }.addOnFailureListener {
+            callback(emptyList())
+        }
+    }
+
+    fun fetchCategoriesList(callback: (List<String>) -> Unit) {
+        categoriesRef.get().addOnSuccessListener { snapshot ->
+            val categoriesList = mutableListOf<String>()
+            for (child in snapshot.children) {
+                child.getValue(String::class.java)?.let { categoriesList.add(it) }
+            }
+            callback(categoriesList)
+        }.addOnFailureListener {
+            callback(emptyList())
+        }
+    }
+
+    fun getCategories(callback: (List<String>) -> Unit) {
+        // Assume you have a reference to your Firebase database
+        val categoriesRef = FirebaseDatabase.getInstance().getReference("categories")
+
+        categoriesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val categories = mutableListOf<String>()
+                dataSnapshot.children.forEach { snapshot ->
+                    val categoryName = snapshot.getValue(String::class.java)
+                    if (categoryName != null) {
+                        categories.add(categoryName)
+                    }
+                }
+                callback(categories)
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("Firebase", "loadCategories:onCancelled", databaseError.toException())
+                callback(emptyList()) // Return empty list on error
+            }
+        })
+    }
+
+    fun getLocations(callback: (List<String>) -> Unit) {
+        // Similar to getCategories, but for locations
+        val locationsRef = FirebaseDatabase.getInstance().getReference("locations")
+
+        locationsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val locations = mutableListOf<String>()
+                dataSnapshot.children.forEach { snapshot ->
+                    val locationName = snapshot.getValue(String::class.java)
+                    if (locationName != null) {
+                        locations.add(locationName)
+                    }
+                }
+                callback(locations)
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.w("Firebase", "loadLocations:onCancelled", databaseError.toException())
+                callback(emptyList()) // Return empty list on error
+            }
+        })
+    }
+
+
 
 
 }

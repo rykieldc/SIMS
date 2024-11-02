@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 
 class RecyclerViewUserLogsAdapter(
-    private var logsList: MutableList<UserLogs> = ArrayList()
+    private var logsList: MutableList<UserLogs> = mutableListOf()
 ) : RecyclerView.Adapter<RecyclerViewUserLogsAdapter.LogsViewHolder>() {
 
     var originalList = logsList.toMutableList()
