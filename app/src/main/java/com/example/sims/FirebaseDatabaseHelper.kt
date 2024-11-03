@@ -32,9 +32,9 @@ data class User(
 )
 
 data class History(
-    val action: String = "",
     val date: String = "",
-    val name: String = ""
+    val name: String = "",
+    val action: String = ""
 )
 
 data class Item(
