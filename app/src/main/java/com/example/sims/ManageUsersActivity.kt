@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.SearchView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -26,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView
 class ManageUsersActivity : AppCompatActivity() {
 
     private lateinit var header: TextView
+    private lateinit var searchView: SearchView
     private lateinit var firebaseHelper: FirebaseDatabaseHelper
     private var recyclerView: RecyclerView? = null
     private var recyclerViewUsersAdapter: RecyclerViewUsersAdapter? = null
@@ -48,6 +50,7 @@ class ManageUsersActivity : AppCompatActivity() {
             adapter = recyclerViewUsersAdapter
         }
 
+        setupSearchView()
         fetchUsersFromDatabase()
 
         findViewById<Button>(R.id.addUserBtn).setOnClickListener { showAddUserDialog() }
@@ -70,21 +73,39 @@ class ManageUsersActivity : AppCompatActivity() {
         header.movementMethod = LinkMovementMethod.getInstance()
     }
 
+    private fun setupSearchView() {
+        searchView = findViewById(R.id.searchProduct)
+        searchView.clearFocus()
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                if (newText.isEmpty()) {
+                    recyclerViewUsersAdapter?.resetList()
+                } else {
+                    recyclerViewUsersAdapter?.filter(newText)
+                }
+                return true
+            }
+        })
+    }
+
     override fun onResume() {
         super.onResume()
         fetchUsersFromDatabase()
+        searchView.setQuery("", false)
+        searchView.clearFocus()
     }
 
     @SuppressLint("NotifyDataSetChanged")
     fun fetchUsersFromDatabase() {
         firebaseHelper.fetchUsers { fetchedUsers ->
             userList.clear()
-
             val enabledUsers = fetchedUsers.filter { user -> user.enabled }
-            enabledUsers.forEach { user ->
-                userList.add(user)
-            }
-
+            userList.addAll(enabledUsers)
+            recyclerViewUsersAdapter?.originalList = userList.toMutableList()
             recyclerViewUsersAdapter?.notifyDataSetChanged()
         }
     }

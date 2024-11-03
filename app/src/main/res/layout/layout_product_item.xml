@@ -43,6 +43,8 @@
                 android:fontFamily="@font/poppins_light"
                 android:text="@string/supplier_name"
                 android:textColor="@color/white"
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:textSize="12sp"
                 tools:ignore="TextContrastCheck" />
 
@@ -53,6 +55,8 @@
                 android:fontFamily="@font/poppins_black"
                 android:text="@string/product_name"
                 android:textColor="@color/black"
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -64,6 +68,8 @@
                 android:text="@string/units"
                 android:textColor="@color/white"
                 android:textSize="15sp"
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:textAlignment="textEnd"
                 tools:ignore="TextContrastCheck" />
         </LinearLayout>

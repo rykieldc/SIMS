@@ -9,13 +9,16 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 
 @Suppress("UNUSED_PARAMETER")
 class RecyclerViewUsersAdapter(
     private val getActivity: ManageUsersActivity,
-    private val usersList: MutableList<User>
+    private val usersList: MutableList<User> = mutableListOf()
 ) : RecyclerView.Adapter<RecyclerViewUsersAdapter.UsersViewHolder>() {
+
+    var originalList = usersList.toMutableList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UsersViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.layout_users, parent, false)
@@ -48,6 +51,44 @@ class RecyclerViewUsersAdapter(
         val editButton: ImageButton = itemView.findViewById(R.id.editBtn)
         val deleteButton: ImageButton = itemView.findViewById(R.id.deleteBtn)
     }
+
+    fun filter(query: String) {
+        val filteredList = originalList.filter { user ->
+            user.name.lowercase().contains(query.lowercase()) ||
+            user.role.lowercase().contains(query.lowercase())
+
+        }
+
+        updateUsersList(filteredList)
+    }
+
+    fun resetList() {
+        updateUsersList(originalList)
+    }
+
+    private fun updateUsersList(newList: List<User>) {
+        val diffCallback = LogDiffCallback(usersList, newList)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        usersList.clear()
+        usersList.addAll(newList)
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    class LogDiffCallback(
+        private val oldList: List<User>,
+        private val newList: List<User>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize(): Int = oldList.size
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+            oldList[oldItemPosition].username == newList[newItemPosition].username
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+            oldList[oldItemPosition] == newList[newItemPosition]
+    }
+
 
     private fun showEditUserDialog(user: User, position: Int) {
         val dialogView = LayoutInflater.from(getActivity).inflate(R.layout.dialog_edit_user, null)
@@ -166,7 +207,7 @@ class RecyclerViewUsersAdapter(
                 if (success) {
                     Toast.makeText(getActivity, "${user.name} has been deleted.", Toast.LENGTH_SHORT).show()
 
-                    (getActivity as ManageUsersActivity).fetchUsersFromDatabase()
+                    getActivity.fetchUsersFromDatabase()
 
                 } else {
                     Toast.makeText(getActivity, "Failed to delete user.", Toast.LENGTH_SHORT).show()
@@ -178,8 +219,4 @@ class RecyclerViewUsersAdapter(
         dialogView.findViewById<Button>(R.id.noBtn).setOnClickListener { dialog.dismiss() }
         dialog.show()
     }
-
-
-
-
 }
