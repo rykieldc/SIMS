@@ -9,7 +9,12 @@ import android.text.SpannableString
 import android.text.method.LinkMovementMethod
 import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.ImageView
 import android.widget.SearchView
+import android.widget.Spinner
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -27,9 +32,14 @@ class ViewItemsActivity : AppCompatActivity() {
 
     private lateinit var header: TextView
     private lateinit var searchView: SearchView
+    private lateinit var filterSpinner: Spinner
+    private lateinit var filterIcon: ImageView
+    private lateinit var noProductsText: TextView
+    private var selectedCategory: String? = null
     private var recyclerView: RecyclerView? = null
     private var recyclerViewProductAdapter: RecyclerViewProductAdapter? = null
     private var productList = mutableListOf<Product>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +65,48 @@ class ViewItemsActivity : AppCompatActivity() {
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
 
+        filterSpinner = findViewById(R.id.filterBtn)
+        filterIcon = findViewById(R.id.filterIcon)
+
+        filterSpinner.visibility = View.INVISIBLE
+
+        filterIcon.setOnClickListener {
+            filterSpinner.performClick()
+        }
+
+
+        val filterChoices = listOf(
+            "None",
+            "Syringes & Needles",
+            "Dressings & Bandages",
+            "Disinfectants & Antiseptics",
+            "Personal Protective Equipment (PPE)",
+            "Diagnostic Devices",
+            "Others"
+        )
+
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, filterChoices)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        filterSpinner.adapter = adapter
+
+        // Set the item selected listener
+        filterSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View,
+                position: Int,
+                id: Long
+            ) {
+                selectedCategory = filterChoices[position]
+                applyCategoryFilter(selectedCategory!!)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+            }
+        }
+
+        noProductsText = findViewById(R.id.noProductsText)
+
         header.text = spannableString
         header.movementMethod = LinkMovementMethod.getInstance()
 
@@ -78,7 +130,9 @@ class ViewItemsActivity : AppCompatActivity() {
 
             override fun onQueryTextChange(newText: String): Boolean {
                 if (newText.isEmpty()) {
-                    recyclerViewProductAdapter?.resetList()
+                    selectedCategory?.let {
+                        applyCategoryFilter(it)
+                    } ?: recyclerViewProductAdapter?.resetList()
                 } else {
                     recyclerViewProductAdapter?.filter(newText)
                 }
@@ -86,12 +140,30 @@ class ViewItemsActivity : AppCompatActivity() {
             }
         })
 
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
     }
+
+    private fun applyCategoryFilter(category: String) {
+        if (category == "None") {
+            recyclerViewProductAdapter?.resetList()
+            noProductsText.visibility = View.GONE
+        } else {
+            recyclerViewProductAdapter?.filterByCategory(category)
+            if (recyclerViewProductAdapter?.itemCount == 0) {
+                noProductsText.text = getString(R.string.no_products_found, category)
+                noProductsText.visibility = View.VISIBLE
+            } else {
+                noProductsText.visibility = View.GONE
+            }
+        }
+    }
+
+
 
     override fun onResume() {
         super.onResume()

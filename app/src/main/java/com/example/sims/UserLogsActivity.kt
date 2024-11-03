@@ -33,6 +33,7 @@ class UserLogsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_user_logs)
 
         header = findViewById(R.id.header)
+        header.highlightColor = ContextCompat.getColor(this, android.R.color.transparent)
 
         setupHeader()
         initializeRecyclerView()
@@ -54,7 +55,7 @@ class UserLogsActivity : AppCompatActivity() {
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
         spannableString.setSpan(
-            DrawableClickSpan { onBackPressed() },
+            DrawableClickSpan { onBackPressedDispatcher.onBackPressed() },
             0,
             1,
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE

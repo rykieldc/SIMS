@@ -251,46 +251,53 @@ class AddItemActivity : AppCompatActivity() {
     }
 
     private fun setupSpinners() {
+        val categories = arrayOf("Select Category", "Syringes & Needles", "Dressings & Bandages", "Disinfectants & Antiseptics", "Personal Protective Equipment (PPE)", "Diagnostic Devices", "Others")
+        val locations = arrayOf("Select Location", "Store Front", "Store Stock Room", "Porta Vaga Stock Room", "YMCA Stock Room", "Home")
         val categorySpinner: Spinner = findViewById(R.id.uploadCategory)
         val locationSpinner: Spinner = findViewById(R.id.uploadLocation)
 
-        // Initialize the adapters
-        val categoryAdapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, arrayOf("Select Category"))
-        val locationAdapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, arrayOf("Select Location"))
+        val categoryAdapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories) {
+            override fun isEnabled(position: Int): Boolean {
+                return position != 0
+            }
 
-        // Set the custom drop-down view
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        locationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getDropDownView(position, convertView, parent) as TextView
+                if (position == 0) {
+                    view.setTextColor(Color.GRAY)
+                } else {
+                    view.setTextColor(Color.BLACK)
+                }
+                return view
+            }
+        }
+
+        val locationAdapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, locations) {
+            override fun isEnabled(position: Int): Boolean {
+                return position != 0
+            }
+
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getDropDownView(position, convertView, parent) as TextView
+                if (position == 0) {
+                    view.setTextColor(Color.GRAY)
+                } else {
+                    view.setTextColor(Color.BLACK)
+                }
+                return view
+            }
+        }
 
         categorySpinner.adapter = categoryAdapter
         locationSpinner.adapter = locationAdapter
 
-        // Fetch categories from database
-        fetchCategories { categories ->
-            // Update the adapter with the fetched categories
-            categoryAdapter.clear()
-            categoryAdapter.add("Select Category") // Add hint
-            categoryAdapter.addAll(categories)
-            categoryAdapter.notifyDataSetChanged()
-        }
-
-        // Fetch locations from database
-        fetchLocations { locations ->
-            // Update the adapter with the fetched locations
-            locationAdapter.clear()
-            locationAdapter.add("Select Location") // Add hint
-            locationAdapter.addAll(locations)
-            locationAdapter.notifyDataSetChanged()
-        }
-
-        // Set default selection
         categorySpinner.setSelection(0)
         locationSpinner.setSelection(0)
 
         categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 if (position > 0) {
-                    fetchNextProductCode(categoryAdapter.getItem(position) ?: "")
+                    fetchNextProductCode(categories[position])
                     isCategorySelected = true
                 } else {
                     isCategorySelected = false
@@ -310,21 +317,6 @@ class AddItemActivity : AppCompatActivity() {
             }
         }
     }
-
-    private fun fetchCategories(callback: (List<String>) -> Unit) {
-        firebaseDatabaseHelper.getCategories { categories ->
-            // Assuming 'categories' is a list of strings fetched from the database
-            callback(categories)
-        }
-    }
-
-    private fun fetchLocations(callback: (List<String>) -> Unit) {
-        firebaseDatabaseHelper.getLocations { locations ->
-            // Assuming 'locations' is a list of strings fetched from the database
-            callback(locations)
-        }
-    }
-
 
     private fun fetchNextProductCode(selectedCategory: String) {
         firebaseDatabaseHelper.getNextProductCode(selectedCategory) { newCode ->

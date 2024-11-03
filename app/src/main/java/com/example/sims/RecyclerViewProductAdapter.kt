@@ -66,18 +66,27 @@ class RecyclerViewProductAdapter(
         val filteredList = originalList.filter { product ->
             product.itemName.lowercase().contains(query.lowercase())
         }
-        val diffCallback = ProductDiffCallback(productList, filteredList)
-        val diffResult = DiffUtil.calculateDiff(diffCallback)
-        productList.clear()
-        productList.addAll(filteredList)
-        diffResult.dispatchUpdatesTo(this)
+        updateList(filteredList)
     }
 
     fun resetList() {
-        val diffCallback = ProductDiffCallback(productList, originalList)
+        updateList(originalList)
+    }
+
+    fun filterByCategory(category: String): Int {
+        val filteredList = originalList.filter { product ->
+            product.itemCategory == category
+        }
+        updateList(filteredList)
+        return filteredList.size
+    }
+
+
+    private fun updateList(newList: List<Product>) {
+        val diffCallback = ProductDiffCallback(productList, newList)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
-        (productList).clear()
-        (productList).addAll(originalList)
+        productList.clear()
+        productList.addAll(newList)
         diffResult.dispatchUpdatesTo(this)
     }
 

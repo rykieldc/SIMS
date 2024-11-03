@@ -51,43 +51,30 @@
 
                 <SearchView
                     android:id="@+id/searchProduct"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:maxWidth="488dp"
+                    android:layout_width="364dp"
+                    android:layout_height="47dp"
+                    android:layout_marginStart="8dp"
                     android:autofillHints="productName"
                     android:background="@drawable/bg_button"
                     android:ems="10"
+                    android:iconifiedByDefault="false"
                     android:inputType="text"
+                    android:maxWidth="500dp"
                     android:queryHint="Search"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="54dp"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/filterBtn"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:iconifiedByDefault="false"/>
+                    app:layout_constraintTop_toTopOf="parent" />
 
-                <ImageView
-                    android:id="@+id/filterBtn"
-                    android:layout_width="46dp"
-                    android:layout_height="48dp"
-                    android:background="@drawable/bg_button"
-                    android:contentDescription="@string/calendar_icon"
-                    android:padding="6dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_calendar" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            </LinearLayout>
+        </LinearLayout>
 
-            <View
-                android:layout_width="wrap_content"
-                android:layout_height="1dp"
-                android:background="@color/divider_color"
-                />
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:background="@color/divider_color"
+            />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -134,8 +121,8 @@
         </LinearLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvViewUserLogs"
@@ -150,7 +137,7 @@
 
             </androidx.recyclerview.widget.RecyclerView>
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
