@@ -67,7 +67,7 @@ class UserLogsActivity : AppCompatActivity() {
 
     private fun initializeRecyclerView() {
         recyclerView = findViewById(R.id.rvViewUserLogs)
-        recyclerViewUserLogsAdapter = RecyclerViewUserLogsAdapter(userLogList)
+        recyclerViewUserLogsAdapter = RecyclerViewUserLogsAdapter(userLogList, this)
 
         recyclerView.layoutManager = GridLayoutManager(this, 1)
         recyclerView.adapter = recyclerViewUserLogsAdapter
@@ -117,6 +117,17 @@ class UserLogsActivity : AppCompatActivity() {
                     action = log.action,
                     date = log.date,
                     name = log.name,
+                    itemCode = log.itemCode,
+                    itemName = log.itemName,
+                    itemCategory = log.itemCategory,
+                    location = log.location,
+                    supplier = log.supplier,
+                    stocksLeft = log.stocksLeft,
+                    dateAdded = log.dateAdded,
+                    lastRestocked = log.lastRestocked,
+                    enabled = log.enabled,
+                    imageUrl = log.imageUrl,
+                    itemDetails = log.itemDetails
                 )
             })
 
