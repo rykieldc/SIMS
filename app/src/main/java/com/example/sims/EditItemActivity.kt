@@ -10,7 +10,6 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
@@ -30,7 +29,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class EditItemActivity : AppCompatActivity() {
     private lateinit var firebaseDatabaseHelper: FirebaseDatabaseHelper
@@ -39,7 +41,7 @@ class EditItemActivity : AppCompatActivity() {
     private lateinit var editName: EditText
     private lateinit var editUnits: EditText
     private lateinit var editCode: EditText
-    private lateinit var editCategory: Spinner
+    private lateinit var editCategory: EditText
     private lateinit var editLocation: Spinner
     private lateinit var editSupplier: EditText
     private lateinit var editDateAdded: EditText
@@ -47,11 +49,11 @@ class EditItemActivity : AppCompatActivity() {
     private lateinit var imageChooserLauncher: ActivityResultLauncher<Intent>
     private lateinit var originalProductCode: String
     private lateinit var originalProductCategory: String
+    private var originalStocksLeft: Int = 0
 
 
     private val calendar: Calendar = Calendar.getInstance()
 
-    private var isCategorySelected = false
     private var isLocationSelected = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,7 +75,9 @@ class EditItemActivity : AppCompatActivity() {
         firebaseDatabaseHelper = FirebaseDatabaseHelper()
 
         editCode.isEnabled = false
+        editCategory.isEnabled = false
         editDateAdded.isEnabled = false
+        editLastRestocked.isEnabled = false
 
         imageChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -106,10 +110,6 @@ class EditItemActivity : AppCompatActivity() {
             insets
         }
 
-        val categories = arrayOf(
-            "Syringes & Needles", "Dressings & Bandages", "Disinfectants & Antiseptics",
-            "Personal Protective Equipment (PPE)", "Diagnostic Devices", "Others"
-        )
         val locations = arrayOf(
             "Store Front", "Store Stock Room", "Porta Vaga Stock Room",
             "YMCA Stock Room", "Home"
@@ -128,16 +128,13 @@ class EditItemActivity : AppCompatActivity() {
         editName.setText(intent.getStringExtra("productName"))
         editUnits.setText(intent.getStringExtra("productNum"))
         editCode.setText(intent.getStringExtra("productCode"))
+        editCategory.setText(intent.getStringExtra("productCategory"))
         editSupplier.setText(intent.getStringExtra("productSupplier"))
         editDateAdded.setText(intent.getStringExtra("dateAdded"))
         editLastRestocked.setText(intent.getStringExtra("lastRestocked"))
 
-        intent.getStringExtra("productCategory")?.let { category ->
-            val categoryPosition = categories.indexOf(category)
-            if (categoryPosition != -1) {
-                editCategory.setSelection(categoryPosition)
-            }
-        }
+        originalStocksLeft = intent.getStringExtra("productNum")?.toIntOrNull() ?: 0
+
 
         intent.getStringExtra("productLocation")?.let { location ->
             val locationPosition = locations.indexOf(location)
@@ -191,7 +188,7 @@ class EditItemActivity : AppCompatActivity() {
             return false
         }
 
-        if (!isCategorySelected) {
+        if (editCategory.text.isNullOrEmpty()) {
             showToast("Please select a category.")
             return false
         }
@@ -258,16 +255,18 @@ class EditItemActivity : AppCompatActivity() {
         }
 
         val productCode = editCode.text.toString()
+        val productCategory = editCategory.text.toString()
         val supplier = editSupplier.text.toString()
-
-        val categorySpinner: Spinner = findViewById(R.id.editCategory)
-        val selectedCategory = categorySpinner.selectedItem?.toString() ?: "No category selected"
 
         val locationSpinner: Spinner = findViewById(R.id.editLocation)
         val selectedLocation = locationSpinner.selectedItem?.toString() ?: "No location selected"
 
         val dateAdded = editDateAdded.text.toString()
-        val lastRestocked = editLastRestocked.text.toString()
+        val lastRestocked = if (units > originalStocksLeft) {
+            SimpleDateFormat("dd/MM/yy", Locale.getDefault()).format(Date())
+        } else {
+            editLastRestocked.text.toString()
+        }
 
         val currentProductName = intent.getStringExtra("productName") ?: ""
 
@@ -280,7 +279,7 @@ class EditItemActivity : AppCompatActivity() {
             val item = Item(
                 itemCode = productCode,
                 itemName = productName,
-                itemCategory = selectedCategory,
+                itemCategory = productCategory,
                 location = selectedLocation,
                 supplier = supplier,
                 stocksLeft = units,
@@ -305,6 +304,7 @@ class EditItemActivity : AppCompatActivity() {
         }
     }
 
+
     private fun showCancelConfirmationDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_cancel, null)
         val yesButton = dialogView.findViewById<Button>(R.id.yesBtn)
@@ -327,36 +327,7 @@ class EditItemActivity : AppCompatActivity() {
     }
 
     private fun setupSpinners() {
-        val categories = arrayOf("Syringes & Needles", "Dressings & Bandages", "Disinfectants & Antiseptics", "Personal Protective Equipment (PPE)", "Diagnostic Devices", "Others")
         val locations = arrayOf("Store Front", "Store Stock Room", "Porta Vaga Stock Room", "YMCA Stock Room", "Home")
-
-        val categorySpinner: Spinner = findViewById(R.id.editCategory)
-        val categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        categorySpinner.adapter = categoryAdapter
-
-        categorySpinner.setSelection(-1)
-
-        editCode.text.toString()
-
-
-        categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                if (position >= 0) {
-                    val selectedCategory = categories[position]
-                    if (selectedCategory != originalProductCategory) {
-                        fetchNextProductCode(selectedCategory)
-                    } else {
-                        editCode.setText(originalProductCode)
-                    }
-                    isCategorySelected = true
-                } else {
-                    isCategorySelected = false
-                }
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
 
         val locationSpinner: Spinner = findViewById(R.id.editLocation)
         val locationAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, locations)
@@ -373,19 +344,6 @@ class EditItemActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
     }
-
-    private fun fetchNextProductCode(selectedCategory: String) {
-        firebaseDatabaseHelper.getNextProductCode(selectedCategory) { newCode ->
-            newCode?.let {
-                editCode.setText(it)
-                Log.d("EditItemActivity", "New product code set: $it")
-            } ?: run {
-                editCode.setText("")
-                Log.d("EditItemActivity", "No product code found for category: $selectedCategory")
-            }
-        }
-    }
-
 
     private fun setupHeader() {
         val drawable = ContextCompat.getDrawable(this, R.drawable.ic_back_arrow_circle)

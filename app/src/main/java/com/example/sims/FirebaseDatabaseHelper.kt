@@ -28,13 +28,23 @@ data class User(
     val name: String = "",
     val role: String = "",
     val enabled: Boolean = true
-
 )
 
 data class History(
     val date: String = "",
     val name: String = "",
-    val action: String = ""
+    val action: String = "",
+    val itemCode: String? = null,
+    val itemName: String? = null,
+    val itemCategory: String? = null,
+    val location: String? = null,
+    val supplier: String? = null,
+    val stocksLeft: Int? = null,
+    val dateAdded: String? = null,
+    val lastRestocked: String? = null,
+    val enabled: Boolean? = null,
+    val imageUrl: String? = null,
+    val itemDetails: String? = null
 )
 
 data class Item(
@@ -229,14 +239,91 @@ class FirebaseDatabaseHelper {
     }
 
 
-    private fun recordHistory(date: String, name: String, action: String, callback: (Boolean) -> Unit) {
+    private fun recordHistory(item: Item, username: String, action: String, itemDetails: String? = null, callback: (Boolean) -> Unit) {
         val historyId = historyRef.push().key ?: ""
-        val history = History(date, name, action)
+        val history = History(
+            date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date()),
+            name = username,
+            action = action,
+            itemCode = item.itemCode,
+            itemName = item.itemName,
+            itemCategory = item.itemCategory,
+            location = item.location,
+            supplier = item.supplier,
+            stocksLeft = item.stocksLeft,
+            dateAdded = item.dateAdded,
+            lastRestocked = item.lastRestocked,
+            enabled = item.enabled,
+            imageUrl = item.imageUrl,
+            itemDetails = itemDetails
+        )
 
         historyRef.child(historyId).setValue(history)
             .addOnSuccessListener { callback(true) }
             .addOnFailureListener { callback(false) }
     }
+
+    private fun recordHistoryAdd(date: String, username: String, action: String, item: Item, callback: (Boolean) -> Unit) {
+        val historyId = historyRef.push().key ?: ""
+        val history = History(
+            date = date,
+            name = username,
+            action = action,
+            itemCode = item.itemCode,
+            itemName = item.itemName,
+            itemCategory = item.itemCategory,
+            location = item.location,
+            supplier = item.supplier,
+            stocksLeft = item.stocksLeft,
+            dateAdded = item.dateAdded,
+            lastRestocked = item.lastRestocked,
+            enabled = item.enabled,
+            imageUrl = item.imageUrl
+        )
+
+        historyRef.child(historyId).setValue(history)
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+    }
+
+
+    private fun recordHistoryDelete(date: String, username: String, action: String, item: Item, callback: (Boolean) -> Unit) {
+        val historyId = historyRef.push().key ?: ""
+        val history = History(
+            date = date,
+            name = username,
+            action = action,
+            itemCode = item.itemCode,
+            itemName = item.itemName,
+            itemCategory = item.itemCategory,
+            location = item.location,
+            supplier = item.supplier,
+            stocksLeft = item.stocksLeft,
+            dateAdded = item.dateAdded,
+            lastRestocked = item.lastRestocked,
+            enabled = item.enabled,
+            imageUrl = item.imageUrl
+        )
+
+        historyRef.child(historyId).setValue(history)
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+    }
+
+    private fun recordHistoryUpdate(date: String, username: String, action: String, itemDetails: String? = null, callback: (Boolean) -> Unit) {
+        val historyId = historyRef.push().key ?: ""
+        val history = History(
+            date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date()),
+            name = username,
+            action = action,
+            itemDetails = itemDetails
+        )
+
+        historyRef.child(historyId).setValue(history)
+            .addOnSuccessListener { callback(true) }
+            .addOnFailureListener { callback(false) }
+    }
+
 
     fun fetchHistory(callback: (List<History>) -> Unit) {
         historyRef.addValueEventListener(object : ValueEventListener {
@@ -292,12 +379,8 @@ class FirebaseDatabaseHelper {
             .addOnSuccessListener {
                 val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
                 val action = "Added Item [${item.itemName}]"
-                recordHistory(date, SessionManager.getUsername() ?: "Unknown", action) { historySuccess ->
-                    if (historySuccess) {
-                        callback(true)
-                    } else {
-                        callback(false)
-                    }
+                recordHistoryAdd(date, SessionManager.getUsername() ?: "Unknown", action, item) { historySuccess ->
+                    callback(historySuccess)
                 }
             }
             .addOnFailureListener {
@@ -306,32 +389,68 @@ class FirebaseDatabaseHelper {
     }
 
     fun updateItem(productCode: String, item: Item, callback: (Boolean) -> Unit) {
-        itemsRef.child(productCode).setValue(item)
-            .addOnSuccessListener {
-                val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
-                val action = "Edited Item [${item.itemName}]"
-                recordHistory(date, SessionManager.getUsername() ?: "Unknown", action) { historySuccess ->
-                    if (historySuccess) {
-                        callback(true)
-                    } else {
-                        callback(false)
-                    }
+        itemsRef.child(productCode).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val existingItem = snapshot.getValue(Item::class.java) ?: return@addOnSuccessListener
+                var action: String? = null
+                var itemDetails = StringBuilder()
+
+                if (existingItem.itemName != item.itemName) {
+                    itemDetails.append("Updated Item Name from [${existingItem.itemName}] to [${item.itemName}]. ")
                 }
-            }
-            .addOnFailureListener {
+                if (existingItem.itemCategory != item.itemCategory) {
+                    itemDetails.append("Updated Item Category from [${existingItem.itemCategory}] to [${item.itemCategory}]. ")
+                }
+                if (existingItem.location != item.location) {
+                    itemDetails.append("Updated Location from [${existingItem.location}] to [${item.location}]. ")
+                }
+                if (existingItem.supplier != item.supplier) {
+                    itemDetails.append("Updated Supplier from [${existingItem.supplier}] to [${item.supplier}]. ")
+                }
+                if (existingItem.imageUrl != item.imageUrl) {
+                    itemDetails.append("Updated Image URL from [${existingItem.imageUrl}] to [${item.imageUrl}]. ")
+                }
+
+                if (existingItem.stocksLeft != item.stocksLeft) {
+                    val stockDifference = item.stocksLeft - existingItem.stocksLeft
+                    if (stockDifference > 0) {
+                        action = "Restocked Item [${item.itemName}]"
+                    } else {
+                        action = "Consumed Stock of Item [${item.itemName}]"
+                    }
+                    itemDetails.append("Stocks Left changed from [${existingItem.stocksLeft}] to [${item.stocksLeft}]. ")
+                }
+
+                itemsRef.child(productCode).setValue(item).addOnSuccessListener {
+                    val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
+                    if (itemDetails.isNotEmpty()) {
+                        recordHistoryUpdate(date, SessionManager.getUsername() ?: "Unknown", action ?: "Updated Item", itemDetails.toString()) { historySuccess ->
+                            callback(historySuccess)
+                        }
+                    } else {
+                        callback(true)
+                    }
+                }.addOnFailureListener {
+                    callback(false)
+                }
+            } else {
                 callback(false)
             }
+        }.addOnFailureListener {
+            callback(false)
+        }
     }
+
 
     fun setItemEnabled(itemCode: String, isEnabled: Boolean, callback: (Boolean) -> Unit) {
         itemsRef.child(itemCode).get().addOnSuccessListener { snapshot ->
             if (snapshot.exists()) {
-                val itemName = snapshot.child("itemName").value?.toString() ?: "Unknown Item"
+                val item = snapshot.getValue(Item::class.java) ?: return@addOnSuccessListener
                 itemsRef.child(itemCode).child("enabled").setValue(isEnabled)
                     .addOnSuccessListener {
                         val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
-                        val action = "Deleted Item [$itemName]"
-                        recordHistory(date, SessionManager.getUsername() ?: "Unknown", action) { historySuccess ->
+                        val action = if (isEnabled) "Restored Item" else "Deleted Item"
+                        recordHistoryDelete(date, SessionManager.getUsername() ?: "Unknown", action, item) { historySuccess ->
                             callback(historySuccess)
                         }
                     }
@@ -345,6 +464,7 @@ class FirebaseDatabaseHelper {
             callback(false)
         }
     }
+
 
 
     fun doesProductNameExistExcludingCurrent(

@@ -233,7 +233,7 @@
                     app:layout_constraintStart_toEndOf="@+id/descCode"
                     app:layout_constraintTop_toBottomOf="@+id/itemDescription" />
 
-                <Spinner
+                <EditText
                     android:id="@+id/editCategory"
                     android:layout_width="200dp"
                     android:layout_height="50dp"
@@ -307,7 +307,8 @@
                     android:textColorHint="#757575"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/descSupplier"
-                    app:layout_constraintTop_toBottomOf="@+id/editSupplier" />
+                    app:layout_constraintTop_toBottomOf="@+id/editSupplier"
+                    tools:ignore="TextContrastCheck" />
 
                 <EditText
                     android:id="@+id/editLastRestocked"
