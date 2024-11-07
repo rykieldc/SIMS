@@ -19,6 +19,7 @@ import java.util.Locale
 private val usersRef: DatabaseReference = Firebase.database.reference.child("users")
 private val historyRef: DatabaseReference = Firebase.database.reference.child("history")
 private val itemsRef: DatabaseReference = Firebase.database.reference.child("items")
+private val notificationsRef: DatabaseReference = Firebase.database.reference.child("notifications")
 private val databaseReference = FirebaseDatabase.getInstance().getReference("items")
 private val db = FirebaseDatabase.getInstance().getReference("users")
 
@@ -46,6 +47,15 @@ data class History(
     val imageUrl: String? = null,
     val itemDetails: String? = null
 )
+
+data class Notification(
+    val itemCode: String = "",
+    val date: String = "",
+    val icon: String = "",
+    val details: String = "",
+    var enabled: Boolean = true
+)
+
 
 data class Item(
     var itemCode: String = "",
@@ -239,30 +249,6 @@ class FirebaseDatabaseHelper {
     }
 
 
-    private fun recordHistory(item: Item, username: String, action: String, itemDetails: String? = null, callback: (Boolean) -> Unit) {
-        val historyId = historyRef.push().key ?: ""
-        val history = History(
-            date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date()),
-            name = username,
-            action = action,
-            itemCode = item.itemCode,
-            itemName = item.itemName,
-            itemCategory = item.itemCategory,
-            location = item.location,
-            supplier = item.supplier,
-            stocksLeft = item.stocksLeft,
-            dateAdded = item.dateAdded,
-            lastRestocked = item.lastRestocked,
-            enabled = item.enabled,
-            imageUrl = item.imageUrl,
-            itemDetails = itemDetails
-        )
-
-        historyRef.child(historyId).setValue(history)
-            .addOnSuccessListener { callback(true) }
-            .addOnFailureListener { callback(false) }
-    }
-
     private fun recordHistoryAdd(date: String, username: String, action: String, item: Item, callback: (Boolean) -> Unit) {
         val historyId = historyRef.push().key ?: ""
         val history = History(
@@ -313,7 +299,7 @@ class FirebaseDatabaseHelper {
     private fun recordHistoryUpdate(date: String, username: String, action: String, itemDetails: String? = null, callback: (Boolean) -> Unit) {
         val historyId = historyRef.push().key ?: ""
         val history = History(
-            date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date()),
+            date = date,
             name = username,
             action = action,
             itemDetails = itemDetails
@@ -342,6 +328,28 @@ class FirebaseDatabaseHelper {
 
             override fun onCancelled(error: DatabaseError) {
                 Log.e("FetchHistory", "Failed to fetch history: ${error.message}")
+                callback(emptyList())
+            }
+        })
+    }
+
+    fun fetchNotifications(callback: (List<Notification>) -> Unit) {
+        notificationsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val notificationsList = mutableListOf<Notification>()
+                for (notificationSnapshot in snapshot.children) {
+                    val notification = notificationSnapshot.getValue(Notification::class.java)
+                    if (notification != null && notification.enabled) {
+                        notificationsList.add(notification)
+                    } else {
+                        Log.e("FetchNotifications", "Notification is null or not enabled: $notificationSnapshot")
+                    }
+                }
+                callback(notificationsList)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FetchNotifications", "Failed to fetch notifications: ${error.message}")
                 callback(emptyList())
             }
         })
@@ -393,7 +401,7 @@ class FirebaseDatabaseHelper {
             if (snapshot.exists()) {
                 val existingItem = snapshot.getValue(Item::class.java) ?: return@addOnSuccessListener
                 var action: String? = null
-                var itemDetails = StringBuilder()
+                val itemDetails = StringBuilder()
 
                 if (existingItem.itemName != item.itemName) {
                     itemDetails.append("Updated Item Name from [${existingItem.itemName}] to [${item.itemName}]. ")
@@ -413,10 +421,10 @@ class FirebaseDatabaseHelper {
 
                 if (existingItem.stocksLeft != item.stocksLeft) {
                     val stockDifference = item.stocksLeft - existingItem.stocksLeft
-                    if (stockDifference > 0) {
-                        action = "Restocked Item [${item.itemName}]"
+                    action = if (stockDifference > 0) {
+                        "Restocked Item [${item.itemName}]"
                     } else {
-                        action = "Consumed Stock of Item [${item.itemName}]"
+                        "Consumed Stock of Item [${item.itemName}]"
                     }
                     itemDetails.append("Stocks Left changed from [${existingItem.stocksLeft}] to [${item.stocksLeft}]. ")
                 }
@@ -424,11 +432,24 @@ class FirebaseDatabaseHelper {
                 itemsRef.child(productCode).setValue(item).addOnSuccessListener {
                     val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
                     if (itemDetails.isNotEmpty()) {
-                        recordHistoryUpdate(date, SessionManager.getUsername() ?: "Unknown", action ?: "Updated Item", itemDetails.toString()) { historySuccess ->
-                            callback(historySuccess)
+                        recordHistoryUpdate(
+                            date,
+                            SessionManager.getUsername() ?: "Unknown",
+                            action ?: "Updated Item",
+                            itemDetails.toString()
+                        ) { historySuccess ->
+                            if (historySuccess) {
+                                monitorStockLevels { monitorSuccess ->
+                                    callback(monitorSuccess)
+                                }
+                            } else {
+                                callback(false)
+                            }
                         }
                     } else {
-                        callback(true)
+                        monitorStockLevels { monitorSuccess ->
+                            callback(monitorSuccess)
+                        }
                     }
                 }.addOnFailureListener {
                     callback(false)
@@ -440,6 +461,7 @@ class FirebaseDatabaseHelper {
             callback(false)
         }
     }
+
 
 
     fun setItemEnabled(itemCode: String, isEnabled: Boolean, callback: (Boolean) -> Unit) {
@@ -549,5 +571,57 @@ class FirebaseDatabaseHelper {
         }
     }
 
+    fun monitorStockLevels(callback: (Boolean) -> Unit) {
+        itemsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val currentDate = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
 
+                for (itemSnapshot in snapshot.children) {
+                    val item = itemSnapshot.getValue(Item::class.java)
+                    if (item != null && item.enabled) {
+                        val itemCode = item.itemCode
+                        val stocksLeft = item.stocksLeft
+
+                        val notificationRef = FirebaseDatabase.getInstance()
+                            .getReference("notifications")
+                            .child(itemCode)
+
+                        if (stocksLeft < 20) {
+                            val notification = Notification(
+                                itemCode = itemCode,
+                                date = currentDate,
+                                icon = "critical",
+                                details = "Stocks for [${item.itemName}] are critically low. Stocks Left: [$stocksLeft]",
+                                enabled = true
+                            )
+                            notificationRef.setValue(notification)
+                        } else if (stocksLeft < 50) {
+                            val notification = Notification(
+                                itemCode = itemCode,
+                                date = currentDate,
+                                icon = "low",
+                                details = "Stocks for [${item.itemName}] are low. Stocks Left: [$stocksLeft]",
+                                enabled = true
+                            )
+                            notificationRef.setValue(notification)
+                        } else {
+                            //notificationRef.removeValue()
+                            notificationRef.get().addOnSuccessListener { notificationSnapshot ->
+                                if (notificationSnapshot.exists()) {
+                                    notificationRef.child("enabled").setValue(false)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                callback(true)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("MonitorStockLevels", "Failed to monitor stock levels: ${error.message}")
+                callback(false)
+            }
+        })
+    }
 }

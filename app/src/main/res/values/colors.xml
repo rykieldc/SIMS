@@ -19,4 +19,8 @@
     <color name="profile_color">#CD7077</color>
     <color name="hint_color">#757575</color>
     <color name="link_color">#DD1A1A</color>
+    <color name="low_stock_unread">#55E5CB1E</color>
+    <color name="low_stock_read">#20E5CB1E</color>
+    <color name="critical_stock_unread">#55E51E1E</color>
+    <color name="critical_stock_read">#20E51E1E</color>
 </resources>
