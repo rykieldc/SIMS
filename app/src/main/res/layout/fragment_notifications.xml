@@ -40,53 +40,29 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <LinearLayout
-                    android:id="@+id/search_field"
-                    android:layout_width="322dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginEnd="8dp"
+                <SearchView
+                    android:id="@+id/searchProduct"
+                    android:layout_width="364dp"
+                    android:layout_height="47dp"
+                    android:layout_marginStart="8dp"
+                    android:autofillHints="productName"
                     android:background="@drawable/bg_button"
-                    android:orientation="horizontal">
+                    android:ems="10"
+                    android:iconifiedByDefault="false"
+                    android:inputType="text"
+                    android:maxWidth="500dp"
+                    android:queryHint="Search"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-                    <ImageView
-                        android:id="@+id/searchBtn"
-                        android:layout_width="46dp"
-                        android:layout_height="48dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="@string/ic_search"
-                        android:padding="6dp"
-                        app:srcCompat="@drawable/ic_search" />
-
-                    <EditText
-                        android:id="@+id/searchProduct"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:autofillHints="productName"
-                        android:background="@drawable/bg_button"
-                        android:ems="10"
-                        android:hint="@string/search"
-                        android:inputType="text"
-                        android:paddingStart="6dp"
-                        android:paddingEnd="6dp"
-                        android:textColorHint="#757575" />
-                </LinearLayout>
-
-                <ImageView
-                    android:id="@+id/filterBtn"
-                    android:layout_width="46dp"
-                    android:layout_height="48dp"
-                    android:background="@drawable/bg_button"
-                    android:contentDescription="@string/ic_filter"
-                    android:padding="6dp"
-                    app:srcCompat="@drawable/ic_filter" />
-
-            </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <View
                 android:layout_width="wrap_content"
@@ -94,206 +70,15 @@
                 android:background="@color/divider_color"
                 />
 
-            <TableLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="8dp"
-                >
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:text="@string/today"
-                        android:textAllCaps="true"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="#C62828"
-                        android:textStyle="bold"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:padding="6dp" />
-                </TableRow>
-
-                <TableRow
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvNotification"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="#55E5CB1E">
-
-                    <TextView
-                        android:text="@string/sample_notif"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/black"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="6dp"
-                        android:gravity="center_vertical"
-                        app:drawableStartCompat="@drawable/ic_important"
-                        android:drawablePadding="8dp"/>
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#20E5CB1E"
-                    >
-
-                    <TextView
-                        android:text="@string/sample_notif2"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/black"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="6dp"
-                        android:gravity="center_vertical"
-                        app:drawableStartCompat="@drawable/ic_important"
-                        android:drawablePadding="8dp"/>
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#55E51E1E"
-                    >
-
-                    <TextView
-                        android:text="@string/sample_notif3"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/black"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="6dp"
-                        android:gravity="center_vertical"
-                        app:drawableStartCompat="@drawable/ic_high_priority"
-                        android:drawablePadding="10dp"/>
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#55E51E1E"
-                    >
-
-                    <TextView
-                        android:text="@string/sample_notif4"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/black"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="6dp"
-                        android:gravity="center_vertical"
-                        app:drawableStartCompat="@drawable/ic_high_priority"
-                        android:drawablePadding="10dp"/>
-                </TableRow>
-            </TableLayout>
-
-            <TableLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="8dp"
-                >
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/poppins_bold"
-                        android:padding="6dp"
-                        android:text="@string/yesterday"
-                        android:textAllCaps="true"
-                        android:textColor="#C62828"
-                        android:textStyle="bold" />
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#20E5CB1E">
-
-                    <TextView
-                        android:text="@string/sample_notif"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/black"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="6dp"
-                        android:gravity="center_vertical"
-                        app:drawableStartCompat="@drawable/ic_important"
-                        android:drawablePadding="8dp"/>
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#20E5CB1E"
-                    >
-
-                    <TextView
-                        android:text="@string/sample_notif2"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/black"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="6dp"
-                        android:gravity="center_vertical"
-                        app:drawableStartCompat="@drawable/ic_important"
-                        android:drawablePadding="8dp"/>
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#20E51E1E"
-                    >
-
-                    <TextView
-                        android:text="@string/sample_notif3"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/black"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="6dp"
-                        android:gravity="center_vertical"
-                        app:drawableStartCompat="@drawable/ic_high_priority"
-                        android:drawablePadding="10dp"/>
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#20E51E1E"
-                    >
-
-                    <TextView
-                        android:text="@string/sample_notif4"
-                        android:fontFamily="@font/poppins_bold"
-                        android:textColor="@color/black"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="6dp"
-                        android:gravity="center_vertical"
-                        app:drawableStartCompat="@drawable/ic_high_priority"
-                        android:drawablePadding="10dp"/>
-                </TableRow>
-            </TableLayout>
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintTop_toBottomOf="@+id/search_field" />
 
         </LinearLayout>
-    </ScrollView>
 
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
