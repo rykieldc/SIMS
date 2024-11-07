@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -12,6 +13,9 @@ class Notifications : Fragment() {
 
     private lateinit var notificationRecyclerView: RecyclerView
     private lateinit var notificationAdapter: RecyclerViewProductNotificationAdapter
+    private lateinit var searchView: SearchView
+    private val firebaseDatabaseHelper = FirebaseDatabaseHelper()
+    private var originalNotificationList = mutableListOf<ProductNotifications>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -26,16 +30,35 @@ class Notifications : Fragment() {
         notificationRecyclerView = view.findViewById(R.id.rvNotification)
         notificationRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        val notificationData = getNotificationData()
-        notificationAdapter = RecyclerViewProductNotificationAdapter(notificationData)
-        notificationRecyclerView.adapter = notificationAdapter
+        searchView = view.findViewById(R.id.searchProduct)
+        setupSearchView()
+
+        firebaseDatabaseHelper.fetchNotifications { notificationsList ->
+            val productNotificationsList = notificationsList.map { firebaseNotification ->
+                ProductNotifications(
+                    itemCode = firebaseNotification.itemCode,
+                    date = firebaseNotification.date,
+                    icon = firebaseNotification.icon,
+                    details = firebaseNotification.details,
+                    enabled = firebaseNotification.enabled
+                )
+            }
+            originalNotificationList = productNotificationsList.toMutableList()
+            notificationAdapter = RecyclerViewProductNotificationAdapter(productNotificationsList)
+            notificationRecyclerView.adapter = notificationAdapter
+        }
     }
 
-    private fun getNotificationData(): List<ProductNotifications> {
-        return listOf(
-            ProductNotifications(R.drawable.ic_important, getString(R.string.sample_notif), "low"),
-            ProductNotifications(R.drawable.ic_high_priority, getString(R.string.sample_notif4), "critical")
-        )
-    }
+    private fun setupSearchView() {
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
 
+            override fun onQueryTextChange(newText: String): Boolean {
+                notificationAdapter.filter(newText)
+                return true
+            }
+        })
+    }
 }

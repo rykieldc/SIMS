@@ -591,7 +591,7 @@ class FirebaseDatabaseHelper {
                                 itemCode = itemCode,
                                 date = currentDate,
                                 icon = "critical",
-                                details = "Stocks for ${item.itemName} are critically low. Stocks Left: $stocksLeft",
+                                details = "Stocks for [${item.itemName}] are critically low. Stocks Left: [$stocksLeft]",
                                 enabled = true
                             )
                             notificationRef.setValue(notification)
@@ -600,7 +600,7 @@ class FirebaseDatabaseHelper {
                                 itemCode = itemCode,
                                 date = currentDate,
                                 icon = "low",
-                                details = "Stocks for ${item.itemName} are low. Stocks Left: $stocksLeft",
+                                details = "Stocks for [${item.itemName}] are low. Stocks Left: [$stocksLeft]",
                                 enabled = true
                             )
                             notificationRef.setValue(notification)

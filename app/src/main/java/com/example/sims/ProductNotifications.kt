@@ -1,8 +1,9 @@
 package com.example.sims
 
 data class ProductNotifications(
-    val icon: Int,
-    val text: String,
-    val stockLevel: String,
-    var isRead: Boolean = false
+    val itemCode: String = "",
+    val date: String = "",
+    val icon: String = "",
+    val details: String = "",
+    var enabled: Boolean = true
 )
