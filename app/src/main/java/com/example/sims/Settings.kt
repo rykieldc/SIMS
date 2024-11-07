@@ -18,7 +18,6 @@ class Settings : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Inflate the layout for this fragment
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         val view = binding.root
 
@@ -43,7 +42,6 @@ class Settings : Fragment() {
         aboutButton.setOnClickListener {
             val intent = Intent(requireActivity(), AboutPage::class.java)
             startActivity(intent)
-            requireActivity().finish()
         }
 
         return view
