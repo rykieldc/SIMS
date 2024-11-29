@@ -12,14 +12,9 @@ import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.Spinner
-import android.widget.TextView
-import android.widget.Toast
+import android.net.Uri
+import android.util.Log
+import android.widget.*
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,6 +25,18 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.Scopes
+import com.google.android.gms.common.api.Scope
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
+import com.google.api.client.http.InputStreamContent
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.drive.Drive
+import com.google.api.services.drive.model.File
+import com.google.api.services.drive.model.Permission
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -51,8 +58,12 @@ class EditItemActivity : AppCompatActivity() {
     private lateinit var originalProductCategory: String
     private var originalStocksLeft: Int = 0
 
+    private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var driveService: Drive
 
+    private val driveScopes = listOf("https://www.googleapis.com/auth/drive.file")
     private val calendar: Calendar = Calendar.getInstance()
+    private var imageUri: Uri? = null
 
     private var isLocationSelected = false
 
@@ -82,9 +93,8 @@ class EditItemActivity : AppCompatActivity() {
         imageChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val data: Intent? = result.data
-                data?.data?.let { imageUri ->
-                    editImg.setImageURI(imageUri)
-                }
+                imageUri = data?.data
+                editImg.setImageURI(imageUri)
             }
         }
 
@@ -103,6 +113,7 @@ class EditItemActivity : AppCompatActivity() {
         setupHeader()
         setupImageChooser()
         setupDatePickers()
+        setupGoogleSignIn()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -162,12 +173,54 @@ class EditItemActivity : AppCompatActivity() {
         }
     }
 
-    private fun validateInputs(): Boolean {
-        if (editImg.drawable == null) {
-            showToast("Please select an image.")
-            return false
-        }
+    private fun setupGoogleSignIn() {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestScopes(
+                Scope(Scopes.DRIVE_FILE),
+                Scope("https://www.googleapis.com/auth/drive.appdata")
+            )
+            .build()
 
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+        googleSignInClient.signInIntent.also {
+            startActivityForResult(it, 100)
+        }
+    }
+
+    private var isDriveServiceInitialized = false
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 100) {
+            GoogleSignIn.getSignedInAccountFromIntent(data)
+                .addOnSuccessListener { googleAccount ->
+                    val credential = GoogleAccountCredential.usingOAuth2(this, driveScopes)
+                    credential.selectedAccount = googleAccount.account
+
+                    driveService = Drive.Builder(
+                        GoogleNetHttpTransport.newTrustedTransport(),
+                        GsonFactory.getDefaultInstance(),
+                        credential
+                    ).setApplicationName("SimsApp").build()
+
+                    isDriveServiceInitialized = true
+                    Log.d("GoogleSignIn", "Drive service initialized successfully.")
+                    showToast("Google Drive service is initialized.")
+                }
+                .addOnFailureListener { e ->
+                    if (e.message?.contains("insufficientScopes") == true) {
+                        showToast("Insufficient permissions. Please sign in again.")
+                        setupGoogleSignIn()
+                    } else {
+                        showToast("Sign-in failed. Try again.")
+                    }
+                }
+
+        }
+    }
+
+    private fun validateInputs(): Boolean {
         if (editName.text.isNullOrEmpty()) {
             showToast("Please enter the product name.")
             return false
@@ -233,8 +286,10 @@ class EditItemActivity : AppCompatActivity() {
             .create()
 
         saveButton.setOnClickListener {
-            saveItemToDatabase()
-            dialog.dismiss()
+            if (validateInputs()) {
+                uploadImageToDrive()
+                dialog.dismiss()
+            }
         }
 
         cancelButton.setOnClickListener {
@@ -244,8 +299,46 @@ class EditItemActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun saveItemToDatabase() {
-        val imageUri = ""
+    private fun uploadImageToDrive() {
+        if (!isDriveServiceInitialized) {
+            showToast("Google Drive service is not initialized. Please try again.")
+            return
+        }
+
+        Thread {
+            try {
+                val imageLink = if (imageUri != null) {
+                    val contentResolver = contentResolver
+                    val inputStream = contentResolver.openInputStream(imageUri!!)
+                    val metadata = File().apply {
+                        name = "uploaded_image.jpg"
+                        parents = listOf("root")
+                    }
+
+                    val fileContent = InputStreamContent("image/jpeg", inputStream)
+                    val driveFile = driveService.files().create(metadata, fileContent).setFields("id").execute()
+                    val fileId = driveFile.id
+
+                    val permission = Permission().apply {
+                        role = "reader"
+                        type = "anyone"
+                    }
+                    driveService.permissions().create(fileId, permission).execute()
+                    "https://drive.google.com/uc?id=$fileId"
+                } else {
+                    // Use the default image URL if no image is uploaded
+                    "https://drive.google.com/uc?id=1Y1RW22Vb4E02UMlMvjY1-qA1xlpPa0dc"
+                }
+
+                runOnUiThread { saveItemToDatabase(imageLink) }
+            } catch (e: Exception) {
+                Log.e("DriveUpload", "Error uploading image.", e)
+                runOnUiThread { showToast("Failed to upload image.") }
+            }
+        }.start()
+    }
+
+    private fun saveItemToDatabase(imageUrl: String) {
         val productName = editName.text.toString()
         val unitsText = editUnits.text.toString().replace(" units", "")
         val units = unitsText.toIntOrNull()
@@ -285,7 +378,7 @@ class EditItemActivity : AppCompatActivity() {
                 stocksLeft = units,
                 dateAdded = dateAdded,
                 lastRestocked = lastRestocked,
-                imageUrl = imageUri,
+                imageUrl = imageUrl,
                 enabled = true
             )
 

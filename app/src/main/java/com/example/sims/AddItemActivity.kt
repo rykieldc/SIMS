@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -20,6 +21,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -31,6 +33,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.Scopes
+import com.google.android.gms.common.api.Scope
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
+import com.google.api.client.http.InputStreamContent
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.drive.Drive
+import com.google.api.services.drive.model.File
+import com.google.api.services.drive.model.Permission
 import java.util.Calendar
 
 class AddItemActivity : AppCompatActivity() {
@@ -41,12 +55,17 @@ class AddItemActivity : AppCompatActivity() {
     private lateinit var uploadLastRestocked: EditText
     private lateinit var productCodeEditText: EditText
     private lateinit var productNameEditText: EditText
+    private lateinit var progressBar: ProgressBar
+
     private lateinit var unitsEditText: EditText
     private lateinit var supplierEditText: EditText
     private lateinit var imageChooserLauncher: ActivityResultLauncher<Intent>
+    private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var driveService: Drive
 
+    private val driveScopes = listOf("https://www.googleapis.com/auth/drive.file")
     private val calendar: Calendar = Calendar.getInstance()
-
+    private var imageUri: Uri? = null
     private var isCategorySelected = false
     private var isLocationSelected = false
 
@@ -63,6 +82,7 @@ class AddItemActivity : AppCompatActivity() {
         productNameEditText = findViewById(R.id.uploadName)
         unitsEditText = findViewById(R.id.uploadUnits)
         supplierEditText = findViewById(R.id.uploadSupplier)
+        progressBar = findViewById(R.id.progressBar)
         firebaseDatabaseHelper = FirebaseDatabaseHelper()
 
         uploadLastRestocked.isEnabled = false
@@ -71,9 +91,8 @@ class AddItemActivity : AppCompatActivity() {
         imageChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val data: Intent? = result.data
-                data?.data?.let { imageUri ->
-                    uploadImg.setImageURI(imageUri)
-                }
+                imageUri = data?.data
+                uploadImg.setImageURI(imageUri)
             }
         }
 
@@ -93,6 +112,7 @@ class AddItemActivity : AppCompatActivity() {
         setupHeader()
         setupImageChooser()
         setupDatePickers()
+        setupGoogleSignIn()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -101,11 +121,54 @@ class AddItemActivity : AppCompatActivity() {
         }
     }
 
-    private fun validateInputs(): Boolean {
-        if (uploadImg.drawable == null) {
-            uploadImg.setImageURI(null)
-        }
+    private fun setupGoogleSignIn() {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestScopes(
+                Scope(Scopes.DRIVE_FILE),
+                Scope("https://www.googleapis.com/auth/drive.appdata")
+            )
+            .build()
 
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+        googleSignInClient.signInIntent.also {
+            startActivityForResult(it, 100)
+        }
+    }
+
+    private var isDriveServiceInitialized = false
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 100) {
+            GoogleSignIn.getSignedInAccountFromIntent(data)
+                .addOnSuccessListener { googleAccount ->
+                    val credential = GoogleAccountCredential.usingOAuth2(this, driveScopes)
+                    credential.selectedAccount = googleAccount.account
+
+                    driveService = Drive.Builder(
+                        GoogleNetHttpTransport.newTrustedTransport(),
+                        GsonFactory.getDefaultInstance(),
+                        credential
+                    ).setApplicationName("SimsApp").build()
+
+                    isDriveServiceInitialized = true
+                    Log.d("GoogleSignIn", "Drive service initialized successfully.")
+                    showToast("Google Drive service is initialized.")
+                }
+                .addOnFailureListener { e ->
+                    if (e.message?.contains("insufficientScopes") == true) {
+                        showToast("Insufficient permissions. Please sign in again.")
+                        setupGoogleSignIn()
+                    } else {
+                        showToast("Sign-in failed. Try again.")
+                    }
+                }
+
+        }
+    }
+
+    private fun validateInputs(): Boolean {
         if (productNameEditText.text.isNullOrEmpty()) {
             showToast("Please enter the product name.")
             return false
@@ -171,8 +234,10 @@ class AddItemActivity : AppCompatActivity() {
             .create()
 
         saveButton.setOnClickListener {
-            saveItemToDatabase()
-            dialog.dismiss()
+            if (validateInputs()) {
+                uploadImageToDrive()
+                dialog.dismiss()
+            }
         }
 
         cancelButton.setOnClickListener {
@@ -182,26 +247,60 @@ class AddItemActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun saveItemToDatabase() {
-        val imageUri = ""
+    private fun uploadImageToDrive() {
+        if (!isDriveServiceInitialized) {
+            showToast("Google Drive service is not initialized. Please try again.")
+            return
+        }
 
+        Thread {
+            try {
+                val imageLink = if (imageUri != null) {
+                    val contentResolver = contentResolver
+                    val inputStream = contentResolver.openInputStream(imageUri!!)
+                    val metadata = File().apply {
+                        name = "uploaded_image.jpg"
+                        parents = listOf("root")
+                    }
+
+                    val fileContent = InputStreamContent("image/jpeg", inputStream)
+                    val driveFile = driveService.files().create(metadata, fileContent).setFields("id").execute()
+                    val fileId = driveFile.id
+
+                    val permission = Permission().apply {
+                        role = "reader"
+                        type = "anyone"
+                    }
+                    driveService.permissions().create(fileId, permission).execute()
+                    "https://drive.google.com/uc?id=$fileId"
+                } else {
+                    // Use the default image URL if no image is uploaded
+                    "https://drive.google.com/uc?id=1Y1RW22Vb4E02UMlMvjY1-qA1xlpPa0dc"
+                }
+
+                runOnUiThread { saveItemToDatabase(imageLink) }
+            } catch (e: Exception) {
+                Log.e("DriveUpload", "Error uploading image.", e)
+                runOnUiThread { showToast("Failed to upload image.") }
+            }
+        }.start()
+    }
+
+    private fun saveItemToDatabase(imageUrl: String) {
         val productName = productNameEditText.text.toString()
         val units = unitsEditText.text.toString().toIntOrNull()
         val productCode = productCodeEditText.text.toString()
         val supplier = supplierEditText.text.toString()
-
         val categorySpinner: Spinner = findViewById(R.id.uploadCategory)
         val selectedCategory = categorySpinner.selectedItem?.toString() ?: "No category selected"
-
         val locationSpinner: Spinner = findViewById(R.id.uploadLocation)
         val selectedLocation = locationSpinner.selectedItem?.toString() ?: "No location selected"
-
         val dateAdded = uploadDateAdded.text.toString()
         val lastRestocked = uploadLastRestocked.text.toString()
 
         firebaseDatabaseHelper.doesProductNameExist(productName) { exists ->
             if (exists) {
-                showToast("Product name already exists. Please choose a different name.")
+                showToast("Product name already exists.")
                 return@doesProductNameExist
             }
 
@@ -214,11 +313,16 @@ class AddItemActivity : AppCompatActivity() {
                 stocksLeft = units ?: 0,
                 dateAdded = dateAdded,
                 lastRestocked = lastRestocked,
-                imageUrl = imageUri,
+                imageUrl = imageUrl,
                 enabled = true
             )
 
+            showLoading()
+
             firebaseDatabaseHelper.saveItem(item) { success ->
+
+                hideLoading()
+
                 if (success) {
                     showToast("Item saved successfully!")
                     finish()
@@ -227,6 +331,16 @@ class AddItemActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun showLoading() {
+        progressBar.visibility = View.VISIBLE
+
+    }
+
+    private fun hideLoading() {
+        progressBar.visibility = View.GONE
+
     }
 
     private fun showCancelConfirmationDialog() {

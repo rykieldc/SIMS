@@ -53,7 +53,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
 
     // Google API and Drive
-    implementation(libs.play.services.auth.v2050)
+    implementation(libs.play.services.auth.v2070)
     implementation(libs.google.api.client.android.v1332)
     implementation(libs.google.api.client.gson)
     implementation(libs.google.api.services.drive.vv3rev1361250)
