@@ -1,5 +1,6 @@
 package com.example.sims
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -34,9 +35,7 @@ class Settings : Fragment() {
         }
 
         logoutButton.setOnClickListener {
-            val intent = Intent(requireActivity(), LoginActivity::class.java)
-            startActivity(intent)
-            requireActivity().finish()
+            showLogoutConfirmationDialog()
         }
 
         aboutButton.setOnClickListener {
@@ -45,6 +44,29 @@ class Settings : Fragment() {
         }
 
         return view
+    }
+
+    private fun showLogoutConfirmationDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_logout_confirmation, null)
+        val noButton = dialogView.findViewById<View>(R.id.noBtn)
+        val yesButton = dialogView.findViewById<View>(R.id.yesBtn)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        noButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        yesButton.setOnClickListener {
+            dialog.dismiss()
+            val intent = Intent(requireActivity(), LoginActivity::class.java)
+            startActivity(intent)
+            requireActivity().finish()
+        }
+
+        dialog.show()
     }
 
     override fun onDestroyView() {

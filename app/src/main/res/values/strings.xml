@@ -108,4 +108,5 @@
     <string name="filter">Filter</string>
     <string name="no_products_found">No products found for the category %1$s</string>
     <string name="added_item">Added Item</string>
+    <string name="are_you_sure_you_want_to_logout">Are you sure you want to logout?</string>
 </resources>

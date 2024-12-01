@@ -310,7 +310,6 @@ class FirebaseDatabaseHelper {
             .addOnFailureListener { callback(false) }
     }
 
-
     fun fetchHistory(callback: (List<History>) -> Unit) {
         historyRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -323,7 +322,10 @@ class FirebaseDatabaseHelper {
                         Log.e("FetchHistory", "History record is null: $historySnapshot")
                     }
                 }
-                callback(historyList)
+
+                val reversedHistoryList = historyList.asReversed()
+
+                callback(reversedHistoryList)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -332,6 +334,19 @@ class FirebaseDatabaseHelper {
             }
         })
     }
+
+
+
+    private fun parseDate(dateString: String): Date {
+        return try {
+            val dateFormat = SimpleDateFormat("MM/dd/yy", Locale.getDefault())
+            dateFormat.parse(dateString) ?: Date(0)
+        } catch (e: Exception) {
+            Log.e("ParseDate", "Error parsing date: $dateString", e)
+            Date(0)
+        }
+    }
+
 
     fun fetchNotifications(callback: (List<Notification>) -> Unit) {
         notificationsRef.addValueEventListener(object : ValueEventListener {
@@ -355,8 +370,6 @@ class FirebaseDatabaseHelper {
         })
     }
 
-
-
     fun fetchItems(callback: (List<Item>) -> Unit) {
         itemsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -369,7 +382,10 @@ class FirebaseDatabaseHelper {
                         Log.e("FetchItems", "Item is null or not enabled: $itemSnapshot")
                     }
                 }
-                callback(itemsList)
+
+                val reversedItemsList = itemsList.asReversed()
+
+                callback(reversedItemsList)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -472,6 +488,25 @@ class FirebaseDatabaseHelper {
                     .addOnSuccessListener {
                         val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
                         val action = if (isEnabled) "Restored Item" else "Deleted Item"
+
+                        val notificationRef = FirebaseDatabase.getInstance()
+                            .getReference("notifications")
+                            .child(itemCode)
+
+                        notificationRef.get().addOnSuccessListener { notificationSnapshot ->
+                            if (notificationSnapshot.exists()) {
+                                notificationRef.child("enabled").setValue(false)
+                                    .addOnSuccessListener {
+                                        Log.d("setItemEnabled", "Notification for $itemCode disabled successfully.")
+                                    }
+                                    .addOnFailureListener {
+                                        Log.e("setItemEnabled", "Failed to disable notification for $itemCode: ${it.message}")
+                                    }
+                            }
+                        }.addOnFailureListener {
+                            Log.e("setItemEnabled", "Failed to fetch notification for $itemCode: ${it.message}")
+                        }
+
                         recordHistoryDelete(date, SessionManager.getUsername() ?: "Unknown", action, item) { historySuccess ->
                             callback(historySuccess)
                         }

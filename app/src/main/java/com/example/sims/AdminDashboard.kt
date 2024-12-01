@@ -46,7 +46,7 @@ class AdminDashboard : Fragment() {
         }
 
         editItemCardView.setOnClickListener {
-            val intent = Intent(requireContext(), ViewItemsActivity::class.java)
+            val intent = Intent(requireContext(), EditItemsActivityList::class.java)
             startActivity(intent)
         }
 
@@ -56,7 +56,7 @@ class AdminDashboard : Fragment() {
         }
 
         deleteItemCardView.setOnClickListener {
-            val intent = Intent(requireContext(), ViewItemsActivity::class.java)
+            val intent = Intent(requireContext(), DeleteItemsActivityList::class.java)
             startActivity(intent)
         }
 

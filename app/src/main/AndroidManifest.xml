@@ -45,6 +45,12 @@
             android:name=".EditItemActivity"
             android:exported="false" />
         <activity
+            android:name=".EditItemsActivityList"
+            android:exported="false" />
+        <activity
+            android:name=".DeleteItemsActivityList"
+            android:exported="false" />
+        <activity
             android:name=".AddItemActivity"
             android:exported="false" />
         <activity
