@@ -155,29 +155,44 @@ class FirebaseDatabaseHelper {
 
 
     fun checkUser(username: String, password: String, callback: (Boolean) -> Unit) {
-        usersRef.child(username).get().addOnSuccessListener { snapshot ->
-            val user = snapshot.getValue<User>()
-            if (user != null && user.enabled) {
-                SessionManager.saveUsername(username)
-                callback(user.password == password)
-            } else {
+        usersRef.get()
+            .addOnSuccessListener { snapshot ->
+                var isUserValid = false
+
+                for (childSnapshot in snapshot.children) {
+                    val user = childSnapshot.getValue(User::class.java)
+                    if (user != null && user.username == username && user.enabled) {
+                        if (user.password == password) {
+                            SessionManager.saveUsername(user.username)
+                            isUserValid = true
+                            break
+                        }
+                    }
+                }
+
+                callback(isUserValid)
+            }
+            .addOnFailureListener {
                 callback(false)
             }
-        }.addOnFailureListener {
-            callback(false)
-        }
     }
 
-    fun checkUserData(userKey: String, callback: (User) -> Unit) {
-        usersRef.child(userKey).get()
+
+    fun checkUserData(username: String, callback: (User) -> Unit) {
+        usersRef.get()
             .addOnSuccessListener { snapshot ->
-                if (snapshot.exists()) {
-                    val name = snapshot.child("name").getValue(String::class.java) ?: "Unknown"
-                    val role = snapshot.child("role").getValue(String::class.java) ?: "Unknown"
-                    val username = snapshot.child("username").getValue(String::class.java) ?: "Unknown"
-                    val enabled = snapshot.child("enabled").getValue(Boolean::class.java) ?: false
-                    val user = User(name = name, username = username, role = role, enabled = enabled)
-                    callback(user)
+                var foundUser: User? = null
+
+                for (childSnapshot in snapshot.children) {
+                    val user = childSnapshot.getValue(User::class.java)
+                    if (user != null && user.username == username) {
+                        foundUser = user
+                        break
+                    }
+                }
+
+                if (foundUser != null) {
+                    callback(foundUser)
                 } else {
                     callback(User())
                 }
@@ -234,6 +249,22 @@ class FirebaseDatabaseHelper {
                 callback(emptyList())
             }
         })
+    }
+
+    fun deleteUser(username: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        db.child(username).removeValue()
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { exception ->
+                onFailure(exception.message ?: "Error deleting user")
+            }
+    }
+
+    fun addUser(username: String, user: User, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        db.child(username).setValue(user)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { exception ->
+                onFailure(exception.message ?: "Error adding user")
+            }
     }
 
     fun updateUser(userKey: String, user: User, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
@@ -408,19 +439,6 @@ class FirebaseDatabaseHelper {
             }
         })
     }
-
-
-
-    private fun parseDate(dateString: String): Date {
-        return try {
-            val dateFormat = SimpleDateFormat("MM/dd/yy", Locale.getDefault())
-            dateFormat.parse(dateString) ?: Date(0)
-        } catch (e: Exception) {
-            Log.e("ParseDate", "Error parsing date: $dateString", e)
-            Date(0)
-        }
-    }
-
 
     fun fetchNotifications(callback: (List<Notification>) -> Unit) {
         notificationsRef.addValueEventListener(object : ValueEventListener {

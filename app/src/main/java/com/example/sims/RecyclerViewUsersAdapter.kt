@@ -1,5 +1,6 @@
 package com.example.sims
 
+import SessionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -168,29 +169,44 @@ class RecyclerViewUsersAdapter(
 
 
     private fun updateUserInDatabase(user: User, dialog: AlertDialog, position: Int) {
-        val userKey = usersList[position].username
+        val oldUsername = usersList[position].username
+        val newUsername = user.username
         val dbHelper = FirebaseDatabaseHelper()
 
-        val isDuplicateUsername =
-            usersList.any { it.username == user.username && it.username != userKey }
+        val isUsernameExists = usersList.any { it.username == newUsername && it.username != oldUsername }
 
-        if (isDuplicateUsername) {
-            Toast.makeText(
-                getActivity,
-                "Username already exists. Please choose a different username.",
-                Toast.LENGTH_SHORT
-            ).show()
-        } else {
-            dbHelper.updateUser(userKey, user,
-                onSuccess = {
-                    Toast.makeText(getActivity, "User updated successfully", Toast.LENGTH_SHORT)
-                        .show()
+        if (isUsernameExists) {
+            Toast.makeText(getActivity, "Username already exists. Please choose a different username.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (oldUsername != newUsername) {
+            dbHelper.deleteUser(oldUsername, onSuccess = {
+                dbHelper.addUser(newUsername, user, onSuccess = {
+                    if (SessionManager.getUsername() == oldUsername) {
+                        SessionManager.saveUsername(newUsername)
+                    }
+
+                    Toast.makeText(getActivity, "User updated successfully", Toast.LENGTH_SHORT).show()
                     notifyItemChanged(position)
-                },
-                onFailure = { errorMessage ->
+                    dialog.dismiss()
+                }, onFailure = { errorMessage ->
                     Toast.makeText(getActivity, errorMessage, Toast.LENGTH_SHORT).show()
+                })
+            }, onFailure = { errorMessage ->
+                Toast.makeText(getActivity, errorMessage, Toast.LENGTH_SHORT).show()
+            })
+        } else {
+            dbHelper.updateUser(newUsername, user, onSuccess = {
+                if (SessionManager.getUsername() == oldUsername) {
+                    SessionManager.saveUsername(newUsername)
                 }
-            )
+
+                Toast.makeText(getActivity, "User updated successfully", Toast.LENGTH_SHORT).show()
+                notifyItemChanged(position)
+                dialog.dismiss()
+            }, onFailure = { errorMessage ->
+                Toast.makeText(getActivity, errorMessage, Toast.LENGTH_SHORT).show()
+            })
         }
     }
 

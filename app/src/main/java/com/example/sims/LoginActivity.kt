@@ -40,37 +40,28 @@ class LoginActivity : AppCompatActivity() {
             val password = passwordEditText.text.toString().trim()
 
             if (username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please enter a username and password", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(this, "Please enter a username and password", Toast.LENGTH_SHORT).show()
             } else {
-                // Check user credentials in Firebase
                 firebaseHelper.checkUser(username, password) { isUserValid ->
                     if (isUserValid) {
-
                         firebaseHelper.checkUserData(username) { user ->
-                            val intent = Intent(this, MainActivity::class.java)
-                            intent.putExtra("name", user.name)
-                            intent.putExtra("username", user.username)
-                            intent.putExtra("role", user.role)
-
-                            startActivity(intent)
-                            finish()
+                            if (user.username.isNotEmpty()) {
+                                val intent = Intent(this, MainActivity::class.java)
+                                startActivity(intent)
+                                finish()
+                            } else {
+                                Toast.makeText(this, "User details not found", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     } else {
-                        Toast.makeText(
-                            this,
-                            "Invalid username or password",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show()
                     }
                 }
-
             }
         }
 
         contactAdminTextView.setOnClickListener {
             val phoneNumber = "09280990649"
-
             val phoneIntent = Intent(Intent.ACTION_DIAL).apply {
                 data = Uri.parse("tel:$phoneNumber")
             }
@@ -83,6 +74,4 @@ class LoginActivity : AppCompatActivity() {
             insets
         }
     }
-
 }
-

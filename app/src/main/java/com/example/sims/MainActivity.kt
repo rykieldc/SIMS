@@ -1,5 +1,6 @@
 package com.example.sims
 
+import SessionManager
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -12,9 +13,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var firebaseHelper: FirebaseDatabaseHelper
     private var userRole: String? = null
-    private var userName: String? = null
-    private var user: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,55 +32,40 @@ class MainActivity : AppCompatActivity() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
+        firebaseHelper = FirebaseDatabaseHelper()
 
-        user = intent.getStringExtra("name")
-        userName = intent.getStringExtra("username")
-        userRole = intent.getStringExtra("role")
+        val savedUsername = SessionManager.getUsername()
 
-
-
-        if (userRole == "Admin") {
-            val adminDashboard = AdminDashboard().apply {
-                arguments = Bundle().apply {
-                    putString("user", user)
-                    putString("username", userName)
-                    putString("role", userRole)
-                }
+        if (!savedUsername.isNullOrEmpty()) {
+            firebaseHelper.checkUserData(savedUsername) { userData ->
+                userRole = userData.role
+                setupInitialFragment()
+                setupBottomNavigation()
             }
-            replaceFragment(adminDashboard)
         } else {
-            val userDashboard = UserDashboard().apply {
-                arguments = Bundle().apply {
-                    putString("user", user)
-                    putString("username", userName)
-                    putString("role", userRole)
-                }
-            }
-            replaceFragment(userDashboard)
+            finish()
         }
+    }
 
+    private fun setupInitialFragment() {
+        val initialFragment = if (userRole == "Admin") {
+            AdminDashboard()
+        } else {
+            UserDashboard()
+        }
+        replaceFragment(initialFragment)
+    }
+
+    private fun setupBottomNavigation() {
         bottomNavigationView.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.dashboard -> {
-                    if (userRole == "Admin") {
-                        val adminDashboard = AdminDashboard().apply {
-                            arguments = Bundle().apply {
-                                putString("user", user)
-                                putString("username", userName)
-                                putString("role", userRole)
-                            }
-                        }
-                        replaceFragment(adminDashboard)
+                    val dashboardFragment = if (userRole == "Admin") {
+                        AdminDashboard()
                     } else {
-                        val userDashboard = UserDashboard().apply {
-                            arguments = Bundle().apply {
-                                putString("user", user)
-                                putString("username", userName)
-                                putString("role", userRole)
-                            }
-                        }
-                        replaceFragment(userDashboard)
+                        UserDashboard()
                     }
+                    replaceFragment(dashboardFragment)
                     true
                 }
 
@@ -90,24 +75,12 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.profile -> {
-                    val profilePage = ProfilePage()
-                    val bundle = Bundle()
-                    bundle.putString("name", user)
-                    bundle.putString("username", userName)
-                    bundle.putString("role", userRole)
-                    profilePage.arguments = bundle
-
-                    replaceFragment(profilePage)
+                    replaceFragment(ProfilePage())
                     true
                 }
 
                 R.id.settings -> {
-                    val settingsFragment = Settings().apply {
-                        arguments = Bundle().apply {
-                            putString("username", userName)
-                        }
-                    }
-                    replaceFragment(settingsFragment)
+                    replaceFragment(Settings())
                     true
                 }
                 else -> false

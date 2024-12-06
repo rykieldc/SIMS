@@ -1,5 +1,6 @@
 package com.example.sims
 
+import SessionManager
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,10 +12,6 @@ import androidx.fragment.app.Fragment
 
 class UserDashboard : Fragment() {
 
-    private var user: String? = null
-    private var userName: String? = null
-    private var userRole: String? = null
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -24,14 +21,6 @@ class UserDashboard : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        user = arguments?.getString("name")
-        userName = arguments?.getString("username")
-        userRole = arguments?.getString("role")
-
-
-        val usernameTextView = view.findViewById<TextView>(R.id.header_dashboard)
-        usernameTextView.text = getString(R.string.greetings, userName)
 
         val addItemCardView = view.findViewById<CardView>(R.id.cvAddItem)
         val editItemCardView = view.findViewById<CardView>(R.id.cvEditItem)
@@ -57,5 +46,13 @@ class UserDashboard : Fragment() {
             val intent = Intent(requireContext(), DeleteItemsActivityList::class.java)
             startActivity(intent)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val userName = SessionManager.getUsername()
+        val usernameTextView = view?.findViewById<TextView>(R.id.header_dashboard)
+        usernameTextView?.text = "Hello, $userName!"
     }
 }
