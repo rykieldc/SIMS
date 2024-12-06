@@ -127,7 +127,10 @@ class UserLogsActivity : AppCompatActivity() {
                     lastRestocked = log.lastRestocked,
                     enabled = log.enabled,
                     imageUrl = log.imageUrl,
-                    itemDetails = log.itemDetails
+                    itemDetails = log.itemDetails,
+                    userName = log.userName,
+                    userUsername = log.userUsername,
+                    userRole = log.userRole
                 )
             })
 

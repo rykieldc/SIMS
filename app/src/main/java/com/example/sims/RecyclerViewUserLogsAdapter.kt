@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 
 class RecyclerViewUserLogsAdapter(
     private var logsList: MutableList<UserLogs> = mutableListOf(),
@@ -40,10 +41,16 @@ class RecyclerViewUserLogsAdapter(
 
     @SuppressLint("SetTextI18n")
     private fun showDialog(userLog: UserLogs) {
-        val dialogLayout = if (userLog.action.startsWith("Added") || userLog.action.startsWith("Deleted")) {
-            R.layout.dialog_log_add_and_delete
-        } else {
-            R.layout.dialog_log_update
+        val dialogLayout = when {
+            userLog.action.startsWith("Added Item") || userLog.action.startsWith("Deleted Item") -> {
+                R.layout.dialog_log_add_and_delete
+            }
+            userLog.action.startsWith("Added User") || userLog.action.startsWith("Deleted User") -> {
+                R.layout.dialog_log_user_add_and_delete
+            }
+            else -> {
+                R.layout.dialog_log_update
+            }
         }
 
         val dialogView = LayoutInflater.from(context).inflate(dialogLayout, null)
@@ -58,9 +65,12 @@ class RecyclerViewUserLogsAdapter(
         val itemSupplier: TextView? = dialogView.findViewById(R.id.itemSupplier)
         val itemDateAdded: TextView? = dialogView.findViewById(R.id.itemDateAdded)
         val itemLastRestocked: TextView? = dialogView.findViewById(R.id.itemLastRestocked)
+        val userName: TextView? = dialogView.findViewById(R.id.userName)
+        val userUsername: TextView? = dialogView.findViewById(R.id.userUsername)
+        val userRole: TextView? = dialogView.findViewById(R.id.userRole)
 
         itemName?.text = userLog.itemName ?: "N/A"
-        itemUnits?.text = "${userLog.stocksLeft ?: 0} units"
+        itemUnits?.text = "${userLog.stocksLeft ?: 0} unit(s)"
         itemDescription?.text = userLog.itemDetails ?: "No details available"
         itemCode?.text = userLog.itemCode ?: "N/A"
         itemCategory?.text = userLog.itemCategory ?: "N/A"
@@ -68,9 +78,14 @@ class RecyclerViewUserLogsAdapter(
         itemSupplier?.text = userLog.supplier ?: "N/A"
         itemDateAdded?.text = userLog.dateAdded ?: "N/A"
         itemLastRestocked?.text = userLog.lastRestocked ?: "N/A"
+        userName?.text = userLog.userName ?: "N/A"
+        userUsername?.text = userLog.userUsername ?: "N/A"
+        userRole?.text = userLog.userRole ?: "N/A"
 
         if (userLog.imageUrl != null) {
-            // Glide.with(context).load(userLog.imageUrl).into(itemImg)
+            itemImg?.let { imageView ->
+                Glide.with(context).load(userLog.imageUrl).into(imageView)
+            }
         } else {
             itemImg?.setImageResource(R.drawable.ic_img_placeholder)
         }

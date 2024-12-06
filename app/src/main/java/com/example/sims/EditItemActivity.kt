@@ -3,6 +3,7 @@ package com.example.sims
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -10,11 +11,17 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.net.Uri
-import android.util.Log
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.Spinner
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,7 +31,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
-import java.text.SimpleDateFormat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -37,6 +43,7 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import com.google.api.services.drive.model.Permission
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -326,8 +333,7 @@ class EditItemActivity : AppCompatActivity() {
                     driveService.permissions().create(fileId, permission).execute()
                     "https://drive.google.com/uc?id=$fileId"
                 } else {
-                    // Use the default image URL if no image is uploaded
-                    "https://drive.google.com/uc?id=1Y1RW22Vb4E02UMlMvjY1-qA1xlpPa0dc"
+                    intent.getStringExtra("productImg") ?: "https://drive.google.com/uc?id=1ly0Agk51NxmWUj_GUN3Xb1YvYqDG0ppL"
                 }
 
                 runOnUiThread { saveItemToDatabase(imageLink) }

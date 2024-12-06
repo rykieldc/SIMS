@@ -204,7 +204,7 @@ class DeleteItemsActivityList : AppCompatActivity() {
                     itemCategory = item.itemCategory,
                     location = item.location,
                     supplier = item.supplier,
-                    stocksLeft = "${item.stocksLeft} units",
+                    stocksLeft = "${item.stocksLeft} unit(s)",
                     dateAdded = item.dateAdded,
                     lastRestocked = item.lastRestocked,
                     imageUrl = item.imageUrl

@@ -15,7 +15,7 @@
     <string name="product_card">Product Card</string>
     <string name="supplier_name">Supplier Name</string>
     <string name="product_name">Product Name</string>
-    <string name="units"># Units</string>
+    <string name="units"># Unit(s)</string>
     <string name="saving">Saving…</string>
     <string name="add_item">Add Item</string>
     <string name="ic_upload_img">Upload Image Icon</string>
@@ -49,7 +49,7 @@
     <string name="user">User</string>
     <string name="role">Role</string>
     <string name="item_image">Item Image</string>
-    <string name="stock_count">500 units</string>
+    <string name="stock_count">500 unit(s)</string>
     <string name="sample_code">ABC-123</string>
     <string name="sample_name">Syringes (5mL)</string>
     <string name="sample_category"><![CDATA[Syringes & Needles]]></string>

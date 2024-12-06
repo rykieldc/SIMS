@@ -14,5 +14,8 @@ data class UserLogs(
     val lastRestocked: String? = null,
     val enabled: Boolean? = null,
     val imageUrl: String? = null,
-    val itemDetails: String? = null
+    val itemDetails: String? = null,
+    val userName: String? = null,
+    val userUsername: String? = null,
+    val userRole: String? = null
 )

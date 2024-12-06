@@ -45,7 +45,10 @@ data class History(
     val lastRestocked: String? = null,
     val enabled: Boolean? = null,
     val imageUrl: String? = null,
-    val itemDetails: String? = null
+    val itemDetails: String? = null,
+    val userName: String? = null,
+    val userUsername: String? = null,
+    val userRole: String? = null
 )
 
 data class Notification(
@@ -133,7 +136,11 @@ class FirebaseDatabaseHelper {
                     val user = User(username, password, name, role, enabled = true)
                     usersRef.child(username).setValue(user)
                         .addOnSuccessListener {
-                            callback(true)
+                            val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
+                            val action = "Added User [$username]"
+                            recordUserHistory(date, action, user) { historySuccess ->
+                                callback(historySuccess)
+                            }
                         }
                         .addOnFailureListener {
                             callback(false)
@@ -230,20 +237,87 @@ class FirebaseDatabaseHelper {
     }
 
     fun updateUser(userKey: String, user: User, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
-        db.child(userKey)
-            .setValue(user)
-            .addOnSuccessListener {
-                onSuccess()
+        db.child(userKey).get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    val existingUser = snapshot.getValue(User::class.java)
+                    val userDetails = StringBuilder()
+
+                    if (existingUser != null) {
+                        if (existingUser.name != user.name) {
+                            userDetails.append("Updated Name from [${existingUser.name}] to [${user.name}]. ")
+                        }
+                        if (existingUser.role != user.role) {
+                            userDetails.append("Updated Role from [${existingUser.role}] to [${user.role}]. ")
+                        }
+                        if (existingUser.enabled != user.enabled) {
+                            userDetails.append("Updated Status from [${existingUser.enabled}] to [${user.enabled}]. ")
+                        }
+                    }
+
+                    db.child(userKey).setValue(user)
+                        .addOnSuccessListener {
+                            val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
+                            val action = "Updated User [$userKey]"
+                            recordUserHistory(date, action, user, userDetails.toString()) { historySuccess ->
+                                if (historySuccess) onSuccess() else onFailure("Failed to record history")
+                            }
+                        }
+                        .addOnFailureListener { exception ->
+                            onFailure(exception.message ?: "Error updating user")
+                        }
+                } else {
+                    onFailure("User not found")
+                }
             }
             .addOnFailureListener { exception ->
-                onFailure(exception.message ?: "Error updating user")
+                onFailure(exception.message ?: "Error retrieving user")
             }
     }
 
-    fun setUserEnabled(username: String, isEnabled: Boolean, callback: (Boolean) -> Unit) {
-        val usersRef = FirebaseDatabase.getInstance().getReference("users")
 
-        usersRef.child(username).child("enabled").setValue(isEnabled)
+    fun setUserEnabled(username: String, isEnabled: Boolean, callback: (Boolean) -> Unit) {
+        usersRef.child(username).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val user = snapshot.getValue(User::class.java)
+                if (user != null) {
+                    usersRef.child(username).child("enabled").setValue(isEnabled)
+                        .addOnSuccessListener {
+                            val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
+                            val action = if (isEnabled) "Restored User [$username]" else "Deleted User [$username]"
+                            val userDetails = "User [${user.name}] with Role [${user.role}] was ${if (isEnabled) "restored" else "deleted"}."
+
+                            recordUserHistory(date, action, user, userDetails) { historySuccess ->
+                                callback(historySuccess)
+                            }
+                        }
+                        .addOnFailureListener {
+                            callback(false)
+                        }
+                } else {
+                    callback(false)
+                }
+            } else {
+                callback(false)
+            }
+        }.addOnFailureListener {
+            callback(false)
+        }
+    }
+
+    private fun recordUserHistory(date: String, action: String, user: User? = null, userDetails: String? = null, callback: (Boolean) -> Unit) {
+        val historyId = historyRef.push().key ?: ""
+        val history = History(
+            date = date,
+            name = SessionManager.getUsername() ?: "Unknown",
+            action = action,
+            itemDetails = userDetails,
+            userName = user?.name,
+            userUsername = user?.username,
+            userRole = user?.role
+        )
+
+        historyRef.child(historyId).setValue(history)
             .addOnSuccessListener { callback(true) }
             .addOnFailureListener { callback(false) }
     }
@@ -360,7 +434,10 @@ class FirebaseDatabaseHelper {
                         Log.e("FetchNotifications", "Notification is null or not enabled: $notificationSnapshot")
                     }
                 }
-                callback(notificationsList)
+
+                val reversedNotificationsList = notificationsList.asReversed()
+
+                callback(reversedNotificationsList)
             }
 
             override fun onCancelled(error: DatabaseError) {
