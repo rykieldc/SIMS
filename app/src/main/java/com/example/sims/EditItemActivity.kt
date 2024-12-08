@@ -108,8 +108,8 @@ class EditItemActivity : AppCompatActivity() {
         editUnits.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 val currentText = editUnits.text.toString()
-                if (currentText.endsWith(" units")) {
-                    val unitsText = currentText.replace(" units", "")
+                if (currentText.endsWith(" unit(s)")) {
+                    val unitsText = currentText.replace(" unit(s)", "")
                     editUnits.setText(unitsText)
                     editUnits.setSelection(unitsText.length)
                 }
@@ -346,7 +346,7 @@ class EditItemActivity : AppCompatActivity() {
 
     private fun saveItemToDatabase(imageUrl: String) {
         val productName = editName.text.toString()
-        val unitsText = editUnits.text.toString().replace(" units", "")
+        val unitsText = editUnits.text.toString().replace(" unit(s)", "").trim()
         val units = unitsText.toIntOrNull()
         if (units == null) {
             showToast("Please enter a valid number for units.")
