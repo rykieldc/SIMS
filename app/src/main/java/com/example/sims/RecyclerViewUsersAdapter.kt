@@ -12,6 +12,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Suppress("UNUSED_PARAMETER")
 class RecyclerViewUsersAdapter(
@@ -169,7 +172,8 @@ class RecyclerViewUsersAdapter(
 
 
     private fun updateUserInDatabase(user: User, dialog: AlertDialog, position: Int) {
-        val oldUsername = usersList[position].username
+        val oldUser = usersList[position]
+        val oldUsername = oldUser.username
         val newUsername = user.username
         val dbHelper = FirebaseDatabaseHelper()
 
@@ -179,6 +183,9 @@ class RecyclerViewUsersAdapter(
             Toast.makeText(getActivity, "Username already exists. Please choose a different username.", Toast.LENGTH_SHORT).show()
             return
         }
+
+        val userDetails = StringBuilder()
+
         if (oldUsername != newUsername) {
             dbHelper.deleteUser(oldUsername, onSuccess = {
                 dbHelper.addUser(newUsername, user, onSuccess = {
@@ -186,16 +193,37 @@ class RecyclerViewUsersAdapter(
                         SessionManager.saveUsername(newUsername)
                     }
 
-                    Toast.makeText(getActivity, "User updated successfully", Toast.LENGTH_SHORT).show()
-                    notifyItemChanged(position)
-                    dialog.dismiss()
+                    userDetails.append("Updated Username from [$oldUsername] to [$newUsername]. ")
+
+                    if (oldUser.name != user.name) {
+                        userDetails.append("Updated Name from [${oldUser.name}] to [${user.name}]. ")
+                    }
+                    if (oldUser.role != user.role) {
+                        userDetails.append("Updated Role from [${oldUser.role}] to [${user.role}]. ")
+                    }
+                    if (oldUser.enabled != user.enabled) {
+                        userDetails.append("Updated Status from [${oldUser.enabled}] to [${user.enabled}]. ")
+                    }
+
+                    val date = SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(Date())
+                    val action = "Updated User [$newUsername]"
+
+                    dbHelper.recordUserHistory(date, action, user, userDetails.toString()) { historySuccess ->
+                        if (historySuccess) {
+                            Toast.makeText(getActivity, "User updated successfully", Toast.LENGTH_SHORT).show()
+                            notifyItemChanged(position)
+                            dialog.dismiss()
+                        } else {
+                            Toast.makeText(getActivity, "Failed to record history", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }, onFailure = { errorMessage ->
                     Toast.makeText(getActivity, errorMessage, Toast.LENGTH_SHORT).show()
                 })
             }, onFailure = { errorMessage ->
                 Toast.makeText(getActivity, errorMessage, Toast.LENGTH_SHORT).show()
             })
-        } else {
+        }  else {
             dbHelper.updateUser(newUsername, user, onSuccess = {
                 if (SessionManager.getUsername() == oldUsername) {
                     SessionManager.saveUsername(newUsername)

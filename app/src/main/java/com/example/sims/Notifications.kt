@@ -1,10 +1,12 @@
 package com.example.sims
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -44,10 +46,29 @@ class Notifications : Fragment() {
                 )
             }
             originalNotificationList = productNotificationsList.toMutableList()
-            notificationAdapter = RecyclerViewProductNotificationAdapter(productNotificationsList)
+
+            notificationAdapter = RecyclerViewProductNotificationAdapter(productNotificationsList) { notification ->
+                firebaseDatabaseHelper.fetchItemDetails(notification.itemCode, onSuccess = { item ->
+                    val intent = Intent(requireContext(), ViewItemDetailsActivity::class.java)
+                    intent.putExtra("productImg", item.imageUrl)
+                    intent.putExtra("productName", item.itemName)
+                    intent.putExtra("productNum", "${item.stocksLeft} unit(s)")
+                    intent.putExtra("productCode", item.itemCode)
+                    intent.putExtra("productCategory", item.itemCategory)
+                    intent.putExtra("productLocation", item.location)
+                    intent.putExtra("productSupplier", item.supplier)
+                    intent.putExtra("dateAdded", item.dateAdded)
+                    intent.putExtra("lastRestocked", item.lastRestocked)
+                    startActivity(intent)
+                }, onFailure = { errorMessage ->
+                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+                })
+            }
+
             notificationRecyclerView.adapter = notificationAdapter
         }
     }
+
 
     private fun setupSearchView() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {

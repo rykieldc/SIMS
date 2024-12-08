@@ -336,7 +336,7 @@ class FirebaseDatabaseHelper {
         }
     }
 
-    private fun recordUserHistory(date: String, action: String, user: User? = null, userDetails: String? = null, callback: (Boolean) -> Unit) {
+    fun recordUserHistory(date: String, action: String, user: User? = null, userDetails: String? = null, callback: (Boolean) -> Unit) {
         val historyId = historyRef.push().key ?: ""
         val history = History(
             date = date,
@@ -490,6 +490,28 @@ class FirebaseDatabaseHelper {
         })
     }
 
+    fun fetchItemDetails(itemCode: String, onSuccess: (Item) -> Unit, onFailure: (String) -> Unit) {
+        val dbRef = FirebaseDatabase.getInstance().getReference("items")
+        dbRef.orderByChild("itemCode").equalTo(itemCode)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        for (child in snapshot.children) {
+                            val item = child.getValue(Item::class.java)
+                            if (item != null) {
+                                onSuccess(item)
+                                return
+                            }
+                        }
+                    }
+                    onFailure("Item not found.")
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    onFailure(error.message)
+                }
+            })
+    }
 
 
     fun saveItem(item: Item, callback: (Boolean) -> Unit) {

@@ -9,8 +9,10 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 
-class RecyclerViewProductNotificationAdapter(private var notifications: List<ProductNotifications>) :
-    RecyclerView.Adapter<RecyclerViewProductNotificationAdapter.NotificationViewHolder>() {
+class RecyclerViewProductNotificationAdapter(
+    private var notifications: List<ProductNotifications>,
+    private val onNotificationClick: (ProductNotifications) -> Unit
+) : RecyclerView.Adapter<RecyclerViewProductNotificationAdapter.NotificationViewHolder>() {
 
     private val originalList = notifications.toMutableList()
 
@@ -42,6 +44,10 @@ class RecyclerViewProductNotificationAdapter(private var notifications: List<Pro
                     ContextCompat.getColor(holder.itemView.context, R.color.critical_stock_unread)
                 )
             }
+        }
+
+        holder.itemView.setOnClickListener {
+            onNotificationClick(currentItem)
         }
     }
 
