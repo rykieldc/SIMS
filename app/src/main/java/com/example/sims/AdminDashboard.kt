@@ -65,8 +65,17 @@ class AdminDashboard : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        val userName = SessionManager.getUsername()
+        val savedUsername = SessionManager.getUsername()
         val usernameTextView = view?.findViewById<TextView>(R.id.header_dashboard)
-        usernameTextView?.text = "Hello, $userName!"
+
+        if (!savedUsername.isNullOrEmpty()) {
+            FirebaseDatabaseHelper().checkUserData(savedUsername) { user ->
+                val displayName = user.name
+                usernameTextView?.text = "Hello, $displayName!"
+            }
+        } else {
+            usernameTextView?.text = "Hello, !"
+        }
     }
+
 }
