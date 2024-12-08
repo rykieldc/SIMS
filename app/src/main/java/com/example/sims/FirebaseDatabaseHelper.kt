@@ -568,7 +568,7 @@ class FirebaseDatabaseHelper {
                         recordHistoryUpdate(
                             date,
                             SessionManager.getUsername() ?: "Unknown",
-                            action ?: "Updated Item",
+                            action ?: "Updated Item [${item.itemName}]",
                             itemDetails.toString()
                         ) { historySuccess ->
                             if (historySuccess) {
