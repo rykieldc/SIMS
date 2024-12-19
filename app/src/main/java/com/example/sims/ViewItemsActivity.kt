@@ -190,6 +190,7 @@ class ViewItemsActivity : AppCompatActivity() {
                     itemCode = item.itemCode,
                     itemName = item.itemName,
                     itemCategory = item.itemCategory,
+                    itemWeight = "${item.itemWeight} g",
                     location = item.location,
                     supplier = item.supplier,
                     stocksLeft = "${item.stocksLeft} unit(s)",

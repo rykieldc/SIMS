@@ -55,6 +55,7 @@ class Notifications : Fragment() {
                     intent.putExtra("productNum", "${item.stocksLeft} unit(s)")
                     intent.putExtra("productCode", item.itemCode)
                     intent.putExtra("productCategory", item.itemCategory)
+                    intent.putExtra("productWeight", "${item.itemWeight} g")
                     intent.putExtra("productLocation", item.location)
                     intent.putExtra("productSupplier", item.supplier)
                     intent.putExtra("dateAdded", item.dateAdded)

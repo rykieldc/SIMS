@@ -38,6 +38,7 @@ data class History(
     val itemCode: String? = null,
     val itemName: String? = null,
     val itemCategory: String? = null,
+    val itemWeight: Float? = null,
     val location: String? = null,
     val supplier: String? = null,
     val stocksLeft: Int? = null,
@@ -64,6 +65,7 @@ data class Item(
     var itemCode: String = "",
     var itemName: String = "",
     var itemCategory: String = "",
+    var itemWeight: Float = 0.00f,
     var location: String = "",
     var supplier: String = "",
     var stocksLeft: Int = 0,
@@ -76,6 +78,7 @@ data class Item(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
+        parcel.readFloat(),
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readInt(),
@@ -89,6 +92,7 @@ data class Item(
         parcel.writeString(itemCode)
         parcel.writeString(itemName)
         parcel.writeString(itemCategory)
+        parcel.writeFloat(itemWeight)
         parcel.writeString(location)
         parcel.writeString(supplier)
         parcel.writeInt(stocksLeft)
@@ -363,6 +367,7 @@ class FirebaseDatabaseHelper {
             itemCode = item.itemCode,
             itemName = item.itemName,
             itemCategory = item.itemCategory,
+            itemWeight = item.itemWeight,
             location = item.location,
             supplier = item.supplier,
             stocksLeft = item.stocksLeft,
@@ -387,6 +392,7 @@ class FirebaseDatabaseHelper {
             itemCode = item.itemCode,
             itemName = item.itemName,
             itemCategory = item.itemCategory,
+            itemWeight = item.itemWeight,
             location = item.location,
             supplier = item.supplier,
             stocksLeft = item.stocksLeft,
@@ -541,6 +547,9 @@ class FirebaseDatabaseHelper {
                 }
                 if (existingItem.itemCategory != item.itemCategory) {
                     itemDetails.append("Updated Item Category from [${existingItem.itemCategory}] to [${item.itemCategory}]. ")
+                }
+                if (existingItem.itemWeight != item.itemWeight) {
+                    itemDetails.append("Updated Item Weight from [${existingItem.itemWeight}] to [${item.itemWeight}]. ")
                 }
                 if (existingItem.location != item.location) {
                     itemDetails.append("Updated Location from [${existingItem.location}] to [${item.location}]. ")

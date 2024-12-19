@@ -142,6 +142,25 @@
                     app:layout_constraintVertical_bias="0.285" />
 
                 <TextView
+                    android:id="@+id/descItemWeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="128dp"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:gravity="center|center_vertical"
+                    android:text="@string/weight"
+                    android:textAllCaps="true"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="@+id/editItemWeight"
+                    app:layout_constraintEnd_toEndOf="@+id/descCode"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/itemDescription"
+                    app:layout_constraintVertical_bias="0.4" />
+
+                <TextView
                     android:id="@+id/descLocation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -157,7 +176,7 @@
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/itemDescription"
-                    app:layout_constraintVertical_bias="0.541" />
+                    app:layout_constraintVertical_bias="0.9" />
 
                 <TextView
                     android:id="@+id/descSupplier"
@@ -175,7 +194,7 @@
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/itemDescription"
-                    app:layout_constraintVertical_bias="0.848" />
+                    app:layout_constraintVertical_bias="0.95" />
 
                 <TextView
                     android:id="@+id/descDateAdded"
@@ -193,7 +212,7 @@
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/itemDescription"
-                    app:layout_constraintVertical_bias="0.905" />
+                    app:layout_constraintVertical_bias="0.96" />
 
                 <TextView
                     android:id="@+id/descLastRestocked"
@@ -252,6 +271,25 @@
                     app:layout_constraintStart_toEndOf="@+id/descCategory"
                     app:layout_constraintTop_toBottomOf="@+id/editCode" />
 
+                <EditText
+                    android:id="@+id/editItemWeight"
+                    android:layout_width="200dp"
+                    android:layout_height="50dp"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/bg_fields"
+                    android:autofillHints="itemWeight"
+                    android:gravity="start|center_vertical"
+                    android:hint="@string/product_weight"
+                    android:inputType="numberDecimal"
+                    android:maxWidth="400dp"
+                    android:padding="5dp"
+                    android:textColor="@color/black"
+                    android:textColorHint="#757575"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/descDateAdded"
+                    app:layout_constraintTop_toBottomOf="@+id/editCategory" />
+
                 <Spinner
                     android:id="@+id/editLocation"
                     android:layout_width="200dp"
@@ -269,7 +307,7 @@
                     android:textColorHint="#757575"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/descCategory"
-                    app:layout_constraintTop_toBottomOf="@+id/editCategory" />
+                    app:layout_constraintTop_toBottomOf="@+id/editItemWeight" />
 
                 <EditText
                     android:id="@+id/editSupplier"

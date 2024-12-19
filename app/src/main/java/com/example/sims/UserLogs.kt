@@ -7,6 +7,7 @@ data class UserLogs(
     val itemCode: String? = null,
     val itemName: String? = null,
     val itemCategory: String? = null,
+    val itemWeight: Float? = null,
     val location: String? = null,
     val supplier: String? = null,
     val stocksLeft: Int? = null,

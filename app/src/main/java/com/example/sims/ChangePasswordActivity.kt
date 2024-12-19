@@ -1,5 +1,6 @@
 package com.example.sims
 
+import SessionManager
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -72,8 +73,7 @@ class ChangePasswordActivity : AppCompatActivity() {
             insets
         }
 
-
-        userName = intent.getStringExtra("username")
+        userName = SessionManager.getUsername()
         cPasswordEditText = findViewById(R.id.currentPasswordEditText)
         nPasswordEditText = findViewById(R.id.newPasswordEditText)
         cNewPasswordEditText = findViewById(R.id.confirmPasswordEditText)

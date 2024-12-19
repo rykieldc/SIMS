@@ -109,4 +109,7 @@
     <string name="no_products_found">No products found for the category %1$s</string>
     <string name="added_item">Added Item</string>
     <string name="are_you_sure_you_want_to_logout">Are you sure you want to logout?</string>
+    <string name="sample_wt">1g</string>
+    <string name="weight">Weight</string>
+    <string name="product_weight">Product Weight</string>
 </resources>

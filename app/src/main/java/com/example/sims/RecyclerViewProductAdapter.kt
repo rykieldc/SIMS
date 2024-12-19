@@ -54,6 +54,7 @@ class RecyclerViewProductAdapter(
                     putExtra("productNum", product.stocksLeft)
                     putExtra("productCode", product.itemCode)
                     putExtra("productCategory", product.itemCategory)
+                    putExtra("productWeight", product.itemWeight)
                     putExtra("productLocation", product.location)
                     putExtra("dateAdded", product.dateAdded)
                     putExtra("lastRestocked", product.lastRestocked)

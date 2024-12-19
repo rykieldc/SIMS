@@ -30,6 +30,7 @@ class ViewItemDetailsActivity : AppCompatActivity() {
     private lateinit var itemImg: ImageView
     private lateinit var itemName: TextView
     private lateinit var itemUnits: TextView
+    private lateinit var itemWeight: TextView
     private lateinit var itemCode: TextView
     private lateinit var itemCategory: TextView
     private lateinit var itemLocation: TextView
@@ -74,6 +75,7 @@ class ViewItemDetailsActivity : AppCompatActivity() {
         itemUnits = findViewById(R.id.itemUnits)
         itemCode = findViewById(R.id.itemCode)
         itemCategory = findViewById(R.id.itemCategory)
+        itemWeight = findViewById(R.id.itemWeight)
         itemLocation = findViewById(R.id.itemLocation)
         itemSupplier = findViewById(R.id.itemSupplier)
         itemDateAdded = findViewById(R.id.itemDateAdded)
@@ -89,6 +91,7 @@ class ViewItemDetailsActivity : AppCompatActivity() {
         }
         itemName.text = intent.getStringExtra("productName")
         itemUnits.text = intent.getStringExtra("productNum") ?: "N/A"
+        itemWeight.text = intent.getStringExtra("productWeight") ?: "N/A"
         itemCode.text = intent.getStringExtra("productCode")
         itemCategory.text = intent.getStringExtra("productCategory")
         itemLocation.text = intent.getStringExtra("productLocation")
@@ -102,6 +105,7 @@ class ViewItemDetailsActivity : AppCompatActivity() {
             intent.putExtra("productImg", productImgUrl)
             intent.putExtra("productName", itemName.text.toString())
             intent.putExtra("productNum", itemUnits.text.toString())
+            intent.putExtra("productWeight", itemWeight.text.toString())
             intent.putExtra("productCode", itemCode.text.toString())
             intent.putExtra("productCategory", itemCategory.text.toString())
             intent.putExtra("productLocation", itemLocation.text.toString())
@@ -141,6 +145,8 @@ class ViewItemDetailsActivity : AppCompatActivity() {
     private fun refreshItemDetails(updatedItem: Item) {
         itemName.text = updatedItem.itemName
         "${updatedItem.stocksLeft} units".also { itemUnits.text = it }
+
+        "${updatedItem.itemWeight} g".also { itemWeight.text = it }
         itemCode.text = updatedItem.itemCode
         itemCategory.text = updatedItem.itemCategory
         itemLocation.text = updatedItem.location

@@ -21,7 +21,6 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -52,10 +51,10 @@ class AddItemActivity : AppCompatActivity() {
     private lateinit var headerProduct: TextView
     private lateinit var uploadImg: ImageView
     private lateinit var uploadDateAdded: EditText
+    private lateinit var uploadWeight: EditText
     private lateinit var uploadLastRestocked: EditText
     private lateinit var productCodeEditText: EditText
     private lateinit var productNameEditText: EditText
-    private lateinit var progressBar: ProgressBar
 
     private lateinit var unitsEditText: EditText
     private lateinit var supplierEditText: EditText
@@ -77,12 +76,12 @@ class AddItemActivity : AppCompatActivity() {
         headerProduct = findViewById(R.id.header)
         uploadImg = findViewById(R.id.uploadImg)
         uploadDateAdded = findViewById(R.id.uploadDateAdded)
+        uploadWeight = findViewById(R.id.uploadWeight)
         uploadLastRestocked = findViewById(R.id.uploadLastRestocked)
         productCodeEditText = findViewById(R.id.uploadCode)
         productNameEditText = findViewById(R.id.uploadName)
         unitsEditText = findViewById(R.id.uploadUnits)
         supplierEditText = findViewById(R.id.uploadSupplier)
-        progressBar = findViewById(R.id.progressBar)
         firebaseDatabaseHelper = FirebaseDatabaseHelper()
 
         uploadLastRestocked.isEnabled = false
@@ -171,6 +170,11 @@ class AddItemActivity : AppCompatActivity() {
     private fun validateInputs(): Boolean {
         if (productNameEditText.text.isNullOrEmpty()) {
             showToast("Please enter the product name.")
+            return false
+        }
+
+        if (uploadWeight.text.isNullOrEmpty()) {
+            showToast("Please enter the weight.")
             return false
         }
 
@@ -289,6 +293,7 @@ class AddItemActivity : AppCompatActivity() {
     private fun saveItemToDatabase(imageUrl: String) {
         val productName = productNameEditText.text.toString()
         val units = unitsEditText.text.toString().toIntOrNull()
+        val weight = uploadWeight.text.toString().toFloatOrNull()
         val productCode = productCodeEditText.text.toString()
         val supplier = supplierEditText.text.toString()
         val categorySpinner: Spinner = findViewById(R.id.uploadCategory)
@@ -308,6 +313,7 @@ class AddItemActivity : AppCompatActivity() {
                 itemCode = productCode,
                 itemName = productName,
                 itemCategory = selectedCategory,
+                itemWeight = (weight ?: 0).toFloat(),
                 location = selectedLocation,
                 supplier = supplier,
                 stocksLeft = units ?: 0,
@@ -317,11 +323,7 @@ class AddItemActivity : AppCompatActivity() {
                 enabled = true
             )
 
-            showLoading()
-
             firebaseDatabaseHelper.saveItem(item) { success ->
-
-                hideLoading()
 
                 if (success) {
                     showToast("Item saved successfully!")
@@ -331,16 +333,6 @@ class AddItemActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    private fun showLoading() {
-        progressBar.visibility = View.VISIBLE
-
-    }
-
-    private fun hideLoading() {
-        progressBar.visibility = View.GONE
-
     }
 
     private fun showCancelConfirmationDialog() {

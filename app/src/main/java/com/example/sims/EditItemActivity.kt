@@ -54,6 +54,7 @@ class EditItemActivity : AppCompatActivity() {
     private lateinit var editImg: ImageView
     private lateinit var editName: EditText
     private lateinit var editUnits: EditText
+    private lateinit var editItemWeight: EditText
     private lateinit var editCode: EditText
     private lateinit var editCategory: EditText
     private lateinit var editLocation: Spinner
@@ -84,6 +85,7 @@ class EditItemActivity : AppCompatActivity() {
         editImg = findViewById(R.id.editImg)
         editName = findViewById(R.id.editName)
         editUnits = findViewById(R.id.editUnits)
+        editItemWeight = findViewById(R.id.editItemWeight)
         editCode = findViewById(R.id.editCode)
         editCategory = findViewById(R.id.editCategory)
         editLocation = findViewById(R.id.editLocation)
@@ -112,6 +114,17 @@ class EditItemActivity : AppCompatActivity() {
                     val unitsText = currentText.replace(" unit(s)", "")
                     editUnits.setText(unitsText)
                     editUnits.setSelection(unitsText.length)
+                }
+            }
+        }
+
+        editItemWeight.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                val currentText = editItemWeight.text.toString()
+                if (currentText.endsWith(" g")) {
+                    val weightText = currentText.replace(" g", "")
+                    editItemWeight.setText(weightText)
+                    editItemWeight.setSelection(weightText.length)
                 }
             }
         }
@@ -145,13 +158,17 @@ class EditItemActivity : AppCompatActivity() {
         }
         editName.setText(intent.getStringExtra("productName"))
         editUnits.setText(intent.getStringExtra("productNum"))
+        editItemWeight.setText(intent.getStringExtra("productWeight"))
         editCode.setText(intent.getStringExtra("productCode"))
         editCategory.setText(intent.getStringExtra("productCategory"))
         editSupplier.setText(intent.getStringExtra("productSupplier"))
         editDateAdded.setText(intent.getStringExtra("dateAdded"))
         editLastRestocked.setText(intent.getStringExtra("lastRestocked"))
 
-        originalStocksLeft = intent.getStringExtra("productNum")?.toIntOrNull() ?: 0
+        originalStocksLeft = intent.getStringExtra("productNum")
+            ?.replace(" unit(s)", "")
+            ?.trim()
+            ?.toIntOrNull() ?: 0
 
 
         intent.getStringExtra("productLocation")?.let { location ->
@@ -235,6 +252,11 @@ class EditItemActivity : AppCompatActivity() {
 
         if (editUnits.text.isNullOrEmpty()) {
             showToast("Please enter the units.")
+            return false
+        }
+
+        if (editItemWeight.text.isNullOrEmpty()) {
+            showToast("Please enter the product weight.")
             return false
         }
 
@@ -353,6 +375,13 @@ class EditItemActivity : AppCompatActivity() {
             return
         }
 
+        val weightText = editItemWeight.text.toString().replace(" g", "").trim()
+        val weight = weightText.toFloatOrNull()
+        if (weight == null) {
+            showToast("Please enter a valid number for product weight.")
+            return
+        }
+
         val productCode = editCode.text.toString()
         val productCategory = editCategory.text.toString()
         val supplier = editSupplier.text.toString()
@@ -367,6 +396,7 @@ class EditItemActivity : AppCompatActivity() {
             editLastRestocked.text.toString()
         }
 
+
         val currentProductName = intent.getStringExtra("productName") ?: ""
 
         firebaseDatabaseHelper.doesProductNameExistExcludingCurrent(productName, currentProductName) { exists ->
@@ -379,6 +409,7 @@ class EditItemActivity : AppCompatActivity() {
                 itemCode = productCode,
                 itemName = productName,
                 itemCategory = productCategory,
+                itemWeight = (weight).toFloat(),
                 location = selectedLocation,
                 supplier = supplier,
                 stocksLeft = units,
