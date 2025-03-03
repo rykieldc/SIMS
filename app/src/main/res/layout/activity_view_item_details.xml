@@ -358,6 +358,7 @@
                         android:layout_height="wrap_content"
                         android:backgroundTint="#FF9800"
                         android:fontFamily="@font/poppins_black"
+                        android:textColor="@color/white"
                         android:text="@string/edit"
                         android:textAllCaps="true"
                         android:textStyle="bold"

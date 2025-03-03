@@ -304,7 +304,7 @@
                     android:layout_height="80dp"
                     android:layout_gravity="center"
                     android:contentDescription="@string/generate_reports"
-                    android:src="@drawable/ic_manage_users"/>
+                    android:src="@drawable/ic_report"/>
 
                 <TextView
                     android:layout_width="wrap_content"

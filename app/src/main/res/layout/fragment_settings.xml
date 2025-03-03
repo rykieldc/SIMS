@@ -80,10 +80,11 @@
                         android:fontFamily="@font/poppins_black"
                         android:text="@string/change_password"
                         android:textAllCaps="true"
+                        android:textColor="@color/white"
                         android:textStyle="bold"
                         app:cornerRadius="10dp"
                         app:iconPadding="0dp"
-                        tools:ignore="ButtonStyle,TextContrastCheck" />
+                        tools:ignore="ButtonStyle,TextContrastCheck,TextSizeCheck" />
 
                     <Button
                         android:id="@+id/logoutBtn"
@@ -91,6 +92,7 @@
                         android:layout_height="60dp"
                         android:backgroundTint="@color/profile_color"
                         android:fontFamily="@font/poppins_black"
+                        android:textColor="@color/white"
                         android:text="@string/logout"
                         android:textAllCaps="true"
                         android:textStyle="bold"
@@ -132,6 +134,7 @@
                         android:layout_height="60dp"
                         android:backgroundTint="@color/profile_color"
                         android:fontFamily="@font/poppins_black"
+                        android:textColor="@color/white"
                         android:text="@string/sanvicare"
                         android:textAllCaps="true"
                         android:textStyle="bold"
