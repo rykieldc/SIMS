@@ -1,6 +1,8 @@
 package com.example.sims
 
 import android.annotation.SuppressLint
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -21,8 +23,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ManageUsersActivity : AppCompatActivity() {
 
@@ -51,7 +57,7 @@ class ManageUsersActivity : AppCompatActivity() {
         }
 
         setupSearchView()
-        fetchUsersFromDatabase()
+        lifecycleScope.launch { fetchUsersFromDatabase() }
 
         findViewById<Button>(R.id.addUserBtn).setOnClickListener { showAddUserDialog() }
 
@@ -94,21 +100,65 @@ class ManageUsersActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        fetchUsersFromDatabase()
+        lifecycleScope.launch { fetchUsersFromDatabase() }
         searchView.setQuery("", false)
         searchView.clearFocus()
     }
 
+
+
+
     @SuppressLint("NotifyDataSetChanged")
-    fun fetchUsersFromDatabase() {
-        firebaseHelper.fetchUsers { fetchedUsers ->
-            userList.clear()
-            val enabledUsers = fetchedUsers.filter { user -> user.enabled }
-            userList.addAll(enabledUsers)
-            recyclerViewUsersAdapter?.originalList = userList.toMutableList()
-            recyclerViewUsersAdapter?.notifyDataSetChanged()
+    suspend fun fetchUsersFromDatabase() {
+        withContext(Dispatchers.IO) {
+            val userDao = App.database.userDao()
+            val localUsers = userDao.getAllUsers()
+
+            if (localUsers.isNotEmpty()) {
+                withContext(Dispatchers.Main) {
+                    userList.clear()
+                    userList.addAll(localUsers.map { localUser ->
+                        User(localUser.name, localUser.username, localUser.role,
+                            localUser.enabled.toString()
+                        )
+                    })
+                    recyclerViewUsersAdapter?.originalList = userList.toMutableList()
+                    recyclerViewUsersAdapter?.notifyDataSetChanged()
+                }
+            }
+
+            if (isInternetAvailable()) {
+                firebaseHelper.fetchUsers { fetchedUsers ->
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        if (fetchedUsers.isNotEmpty()) {
+                            userDao.insertAll(fetchedUsers.map { user ->
+                                LocalUser(user.name, user.username, user.role, user.enabled, "default_password")
+                            })
+
+                            withContext(Dispatchers.Main) {
+                                userList.clear()
+                                userList.addAll(fetchedUsers.filter { it.enabled })
+                                recyclerViewUsersAdapter?.originalList = userList.toMutableList()
+                                recyclerViewUsersAdapter?.notifyDataSetChanged()
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
+
+
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager = getSystemService(ConnectivityManager::class.java)
+        val networkCapabilities = connectivityManager.activeNetwork ?: return false
+        val actNw = connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
+
+        return actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+    }
+
+
 
     private fun showAddUserDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_user, null)
@@ -147,14 +197,40 @@ class ManageUsersActivity : AppCompatActivity() {
     }
 
     private fun addUserToDatabase(name: String, username: String, password: String, role: String) {
-        firebaseHelper.addUser(username, password, name, role) { success ->
-            Toast.makeText(
-                this,
-                if (success) "User added successfully!" else "Error adding user to database. Username may already exist.",
-                Toast.LENGTH_SHORT
-            ).show()
+        lifecycleScope.launch(Dispatchers.IO) {
+            val userDao = App.database.userDao()
+            val newUser = LocalUser(name, username, role, enabled = true, password)
+
+            userDao.insert(newUser)
+
+            withContext(Dispatchers.Main) {
+                userList.add(User(name, username, role, enabled = true))
+                recyclerViewUsersAdapter?.notifyDataSetChanged()
+            }
+
+            if (isInternetAvailable()) {
+                firebaseHelper.addUser(username, password, name, role) { success ->
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@ManageUsersActivity,
+                            if (success) "User added successfully!" else "Error adding user to Firestore.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        this@ManageUsersActivity,
+                        "User saved locally. Will sync when online.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
         }
     }
+
+
 
     class DrawableClickSpan(private val clickListener: () -> Unit) : ClickableSpan() {
         override fun onClick(widget: View) {

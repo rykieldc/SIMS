@@ -16,8 +16,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("https://repo.itextsupport.com/android")
+        }
     }
 }
+
 
 rootProject.name = "SIMS"
 include(":app")

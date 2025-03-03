@@ -10,8 +10,10 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -251,7 +253,9 @@ class RecyclerViewUsersAdapter(
                 if (success) {
                     Toast.makeText(getActivity, "${user.name} has been deleted.", Toast.LENGTH_SHORT).show()
 
-                    getActivity.fetchUsersFromDatabase()
+                    getActivity.lifecycleScope.launch {
+                        getActivity.fetchUsersFromDatabase()
+                    }
 
                 } else {
                     Toast.makeText(getActivity, "Failed to delete user.", Toast.LENGTH_SHORT).show()
@@ -259,6 +263,7 @@ class RecyclerViewUsersAdapter(
                 dialog.dismiss()
             }
         }
+
 
         dialogView.findViewById<Button>(R.id.noBtn).setOnClickListener { dialog.dismiss() }
         dialog.show()

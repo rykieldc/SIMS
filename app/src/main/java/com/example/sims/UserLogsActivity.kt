@@ -1,6 +1,7 @@
 package com.example.sims
 
 import android.annotation.SuppressLint
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -16,8 +17,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class UserLogsActivity : AppCompatActivity() {
 
@@ -25,7 +30,7 @@ class UserLogsActivity : AppCompatActivity() {
     private lateinit var searchView: SearchView
     private lateinit var recyclerView: RecyclerView
     private lateinit var recyclerViewUserLogsAdapter: RecyclerViewUserLogsAdapter
-    private var userLogList = mutableListOf<UserLogs>()
+    private var userLogList = mutableListOf<LocalHistory>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,43 +114,76 @@ class UserLogsActivity : AppCompatActivity() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun fetchHistoryFromDatabase() {
-        val databaseHelper = FirebaseDatabaseHelper()
-        databaseHelper.fetchHistory { logsList ->
-            userLogList.clear()
-            userLogList.addAll(logsList.map { log ->
-                UserLogs(
-                    action = log.action,
-                    date = log.date,
-                    name = log.name,
-                    itemCode = log.itemCode,
-                    itemName = log.itemName,
-                    itemCategory = log.itemCategory,
-                    itemWeight = log.itemWeight,
-                    location = log.location,
-                    supplier = log.supplier,
-                    stocksLeft = log.stocksLeft,
-                    dateAdded = log.dateAdded,
-                    lastRestocked = log.lastRestocked,
-                    enabled = log.enabled,
-                    imageUrl = log.imageUrl,
-                    itemDetails = log.itemDetails,
-                    userName = log.userName,
-                    userUsername = log.userUsername,
-                    userRole = log.userRole
-                )
-            })
+        val historyDao = App.database.historyDao() // Get Room database DAO
 
-            recyclerViewUserLogsAdapter.apply {
-                originalList.clear()
-                originalList.addAll(userLogList)
-                notifyDataSetChanged()
+        if (isInternetAvailable()) {
+            // If internet is available, fetch from Firestore and sync to Room
+            val databaseHelper = FirebaseDatabaseHelper()
+            databaseHelper.fetchHistory { logsList ->
+                userLogList.clear()
+                userLogList.addAll(logsList.map { log ->
+                    LocalHistory(
+                        date = log.date,
+                        name = log.name,
+                        action = log.action,
+                        itemCode = log.itemCode,
+                        itemName = log.itemName,
+                        itemCategory = log.itemCategory,
+                        itemWeight = log.itemWeight,
+                        location = log.location,
+                        supplier = log.supplier,
+                        stocksLeft = log.stocksLeft,
+                        dateAdded = log.dateAdded,
+                        lastRestocked = log.lastRestocked,
+                        enabled = log.enabled,
+                        imageUrl = log.imageUrl,
+                        itemDetails = log.itemDetails,
+                        userName = log.userName,
+                        userUsername = log.userUsername,
+                        userRole = log.userRole
+                    )
+                })
+
+                recyclerViewUserLogsAdapter.apply {
+                    originalList.clear()
+                    originalList.addAll(userLogList)
+                    notifyDataSetChanged()
+                }
+
+                // Save fetched data into Room database
+                lifecycleScope.launch(Dispatchers.IO) {
+                    historyDao.clearHistory()
+                    historyDao.insertAll(userLogList)
+                }
+            }
+        } else {
+            // No internet, fetch from Room
+            lifecycleScope.launch(Dispatchers.IO) {
+                val localHistory = historyDao.getAllHistory()
+                withContext(Dispatchers.Main) {
+                    userLogList.clear()
+                    userLogList.addAll(localHistory)
+
+                    recyclerViewUserLogsAdapter.apply {
+                        originalList.clear()
+                        originalList.addAll(userLogList)
+                        notifyDataSetChanged()
+                    }
+                }
             }
         }
     }
+
 
     class DrawableClickSpan(private val clickListener: () -> Unit) : ClickableSpan() {
         override fun onClick(widget: View) {
             clickListener()
         }
     }
+
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager = getSystemService(ConnectivityManager::class.java)
+        return connectivityManager.activeNetworkInfo?.isConnectedOrConnecting == true
+    }
+
 }

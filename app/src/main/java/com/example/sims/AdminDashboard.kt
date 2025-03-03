@@ -9,6 +9,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AdminDashboard : Fragment() {
 
@@ -28,6 +32,7 @@ class AdminDashboard : Fragment() {
         val deleteItemCardView = view.findViewById<CardView>(R.id.cvDeleteItem)
         val manageUsersCardView = view.findViewById<CardView>(R.id.cvManageUsers)
         val historyCardView = view.findViewById<CardView>(R.id.cvHistory)
+        val generateReportsCardView = view.findViewById<CardView>(R.id.cvGenerateReports)
 
 
         addItemCardView.setOnClickListener {
@@ -60,6 +65,11 @@ class AdminDashboard : Fragment() {
             startActivity(intent)
         }
 
+        generateReportsCardView.setOnClickListener {
+            val intent = Intent(requireContext(), GenerateReportsActivity::class.java)
+            startActivity(intent)
+        }
+
     }
 
     override fun onResume() {
@@ -69,13 +79,27 @@ class AdminDashboard : Fragment() {
         val usernameTextView = view?.findViewById<TextView>(R.id.header_dashboard)
 
         if (!savedUsername.isNullOrEmpty()) {
-            FirebaseDatabaseHelper().checkUserData(savedUsername) { user ->
-                val displayName = user.name
-                usernameTextView?.text = "Hello, $displayName!"
+            val userDao = App.database.userDao()
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                val localUser = userDao.getUserByUsername(savedUsername)
+
+                withContext(Dispatchers.Main) {
+                    if (localUser != null) {
+                        val displayName = localUser.name
+                        usernameTextView?.text = "Hello, $displayName!"
+                    } else {
+                        FirebaseDatabaseHelper().checkUserData(savedUsername) { user ->
+                            val displayName = user.name
+                            usernameTextView?.text = "Hello, $displayName!"
+                        }
+                    }
+                }
             }
         } else {
             usernameTextView?.text = "Hello, !"
         }
     }
+
 
 }

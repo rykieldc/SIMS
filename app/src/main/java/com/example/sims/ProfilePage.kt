@@ -1,20 +1,28 @@
 package com.example.sims
 
 import SessionManager
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ProfilePage : Fragment() {
 
     private lateinit var firebaseHelper: FirebaseDatabaseHelper
+    private lateinit var userTextView: TextView
+    private lateinit var usernameTextView: TextView
+    private lateinit var roleTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         firebaseHelper = FirebaseDatabaseHelper()
     }
 
@@ -28,22 +36,77 @@ class ProfilePage : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val userTextView = view.findViewById<TextView>(R.id.profile_name_value)
-        val usernameTextView = view.findViewById<TextView>(R.id.profile_username_value)
-        val roleTextView = view.findViewById<TextView>(R.id.profile_role_value)
+        userTextView = view.findViewById(R.id.profile_name_value)
+        usernameTextView = view.findViewById(R.id.profile_username_value)
+        roleTextView = view.findViewById(R.id.profile_role_value)
 
         val savedUsername = SessionManager.getUsername()
 
         if (!savedUsername.isNullOrEmpty()) {
-            firebaseHelper.checkUserData(savedUsername) { user ->
-                userTextView.text = user.name
-                usernameTextView.text = user.username
-                roleTextView.text = user.role
+            if (isInternetAvailable()) {
+                fetchUserFromFirestore(savedUsername)
+            } else {
+                fetchUserFromLocalDatabase(savedUsername)
             }
         } else {
-            userTextView.text = "Unknown"
-            usernameTextView.text = "Unknown"
-            roleTextView.text = "Unknown"
+            displayUnknownUser()
         }
+    }
+
+    private fun fetchUserFromFirestore(username: String) {
+        firebaseHelper.checkUserData(username) { user ->
+            if (user != null) {
+                updateUI(user.name, user.username, user.role)
+
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val userDao = App.database.userDao()
+                    userDao.insert(
+                        LocalUser(
+                            name = user.name,
+                            username = user.username,
+                            role = user.role,
+                            enabled = user.enabled,
+                            password = user.password
+                        )
+                    )
+                }
+            } else {
+                displayUnknownUser()
+            }
+        }
+    }
+
+
+    private fun fetchUserFromLocalDatabase(username: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val userDao = App.database.userDao()
+            val localUser = userDao.getUserByUsername(username)
+
+            withContext(Dispatchers.Main) {
+                if (localUser != null) {
+                    updateUI(localUser.name, localUser.username, localUser.role)
+                } else {
+                    displayUnknownUser()
+                }
+            }
+        }
+    }
+
+    private fun updateUI(name: String, username: String, role: String) {
+        userTextView.text = name
+        usernameTextView.text = username
+        roleTextView.text = role
+    }
+
+    private fun displayUnknownUser() {
+        userTextView.text = "Unknown"
+        usernameTextView.text = "Unknown"
+        roleTextView.text = "Unknown"
+    }
+
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager =
+            requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        return connectivityManager.activeNetworkInfo?.isConnectedOrConnecting == true
     }
 }

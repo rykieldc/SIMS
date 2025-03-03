@@ -1,9 +1,13 @@
 package com.example.sims
 
 import SessionManager
+import android.content.Context
+import android.content.Intent
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
+import android.widget.Toast
+import androidx.core.content.FileProvider
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -12,16 +16,18 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfWriter
+import com.itextpdf.layout.Document
+import com.itextpdf.layout.element.Paragraph
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
-private val usersRef: DatabaseReference = Firebase.database.reference.child("users")
-private val historyRef: DatabaseReference = Firebase.database.reference.child("history")
-private val itemsRef: DatabaseReference = Firebase.database.reference.child("items")
-private val notificationsRef: DatabaseReference = Firebase.database.reference.child("notifications")
-private val databaseReference = FirebaseDatabase.getInstance().getReference("items")
-private val db = FirebaseDatabase.getInstance().getReference("users")
 
 data class User(
     val username: String = "",
@@ -59,6 +65,11 @@ data class Notification(
     val details: String = "",
     var enabled: Boolean = true
 )
+
+sealed class NotificationItem {
+    data class DateHeader(val date: String) : NotificationItem()
+    data class NotificationEntry(val notification: Notification) : NotificationItem()
+}
 
 
 data class Item(
@@ -119,6 +130,187 @@ data class Item(
 
 class FirebaseDatabaseHelper {
 
+    private val usersRef: DatabaseReference = Firebase.database.reference.child("users")
+    private val historyRef: DatabaseReference = Firebase.database.reference.child("history")
+    private val itemsRef: DatabaseReference = Firebase.database.reference.child("items")
+    private val notificationsRef: DatabaseReference = Firebase.database.reference.child("notifications")
+    private val databaseReference = FirebaseDatabase.getInstance().getReference("items")
+    private val db = FirebaseDatabase.getInstance().getReference("users")
+
+    fun syncUsersToRoom(userDao: UserDao) {
+        usersRef.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val users = snapshot.children.mapNotNull { it.getValue(User::class.java) }
+                    val localUsers = users.map { firebaseUser ->
+                        LocalUser(
+                            username = firebaseUser.username,
+                            password = firebaseUser.password,
+                            name = firebaseUser.name,
+                            role = firebaseUser.role,
+                            enabled = firebaseUser.enabled
+                        )
+                    }
+                    userDao.insertAll(localUsers)
+                    Log.d("FirebaseDatabaseHelper", "Users synced to Room Database")
+                }
+            }
+        }.addOnFailureListener {
+            Log.e("FirebaseDatabaseHelper", "Failed to fetch users", it)
+        }
+    }
+    fun syncItemsToRoom(itemDao: ItemDao) {
+        itemsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val itemsList = mutableListOf<LocalItem>()
+                    for (itemSnapshot in snapshot.children) {
+                        itemSnapshot.getValue(Item::class.java)?.let { item ->
+                            itemsList.add(
+                                LocalItem(
+                                    item.itemCode, item.itemName, item.itemCategory, item.itemWeight,
+                                    item.location, item.supplier, item.stocksLeft, item.dateAdded,
+                                    item.lastRestocked, item.enabled, item.imageUrl
+                                )
+                            )
+                        }
+                    }
+                    itemDao.insertAll(itemsList)
+                    Log.d("FirebaseSync", "Items synced to Room!")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseSync", "Failed to sync items: ${error.message}")
+            }
+        })
+    }
+
+    fun syncHistoryToRoom(historyDao: HistoryDao) {
+        historyRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val historyList = mutableListOf<LocalHistory>()
+                    for (historySnapshot in snapshot.children) {
+                        historySnapshot.getValue(History::class.java)?.let { history ->
+                            historyList.add(LocalHistory(0, history.date, history.name, history.action, history.itemCode,
+                                history.itemName, history.itemCategory, history.itemWeight, history.location,
+                                history.supplier, history.stocksLeft, history.dateAdded, history.lastRestocked,
+                                history.enabled, history.imageUrl, history.itemDetails, history.userName,
+                                history.userUsername, history.userRole))
+                        }
+                    }
+                    historyDao.insertAll(historyList)
+                    Log.d("FirebaseSync", "History synced to Room!")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseSync", "Failed to sync history: ${error.message}")
+            }
+        })
+    }
+
+    fun syncNotificationsToRoom(notificationDao: NotificationDao) {
+        notificationsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val notificationList = mutableListOf<LocalNotification>()
+
+                    for (notificationSnapshot in snapshot.children) {
+                        notificationSnapshot.getValue(Notification::class.java)?.let { notification ->
+                            notificationList.add(notification.toLocalNotification())
+                        }
+                    }
+
+                    notificationDao.clearNotifications()
+                    notificationDao.insertAll(notificationList)
+
+                    Log.d("FirebaseSync", "Notifications synced to Room!")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseSync", "Failed to sync notifications: ${error.message}")
+            }
+        })
+    }
+
+    fun fetchMonthlyHistoryData(selectedMonth: String, selectedYear: String, callback: (List<History>) -> Unit) {
+        historyRef.get().addOnSuccessListener { snapshot ->
+            val historyList = mutableListOf<History>()
+
+            for (doc in snapshot.children) {
+                val history = doc.getValue(History::class.java) ?: continue
+                val date = history.date
+
+                val parts = date.split("/")
+                if (parts.size == 3) {
+                    val month = parts[0] // MM
+                    val year = parts[2]  // YY
+
+                    if (month == selectedMonth && year == selectedYear) {
+                        historyList.add(history)
+                    }
+                }
+            }
+            callback(historyList)
+        }.addOnFailureListener {
+            Log.e("FirebaseDBHelper", "Failed to fetch history")
+        }
+    }
+
+    private fun extractStockChange(itemDetails: String?): Int {
+        if (itemDetails == null) return 0
+
+        val regex = Regex("Stocks Left changed from \\[(\\d+)] to \\[(\\d+)]")
+        val match = regex.find(itemDetails)
+
+        return if (match != null) {
+            val (oldStock, newStock) = match.destructured
+            oldStock.toInt() - newStock.toInt() // Calculate stock change
+        } else {
+            0
+        }
+    }
+
+
+    fun generateMonthlyReport(context: Context, selectedMonth: String, selectedYear: String) {
+        fetchMonthlyHistoryData(selectedMonth, selectedYear) { historyList ->
+            if (historyList.isEmpty()) {
+                Toast.makeText(context, "No history records found for this month", Toast.LENGTH_SHORT).show()
+                return@fetchMonthlyHistoryData
+            }
+
+            val file = File(context.getExternalFilesDir(null), "Monthly_Report.pdf")
+            val pdfWriter = PdfWriter(FileOutputStream(file))
+            val pdfDocument = PdfDocument(pdfWriter)
+            val document = Document(pdfDocument)
+
+            // Add Title
+            document.add(Paragraph("Monthly Inventory Report").setBold().setFontSize(18f))
+            document.add(Paragraph("Report for: $selectedMonth/$selectedYear").setFontSize(14f).setBold())
+
+            // Add History Data
+            for (record in historyList) {
+                val stockChange = extractStockChange(record.itemDetails)
+                document.add(Paragraph("${record.date}: ${record.action} (Stock Change: $stockChange)"))
+            }
+
+            document.close()
+
+            Toast.makeText(context, "Report Generated: ${file.absolutePath}", Toast.LENGTH_SHORT).show()
+
+            // Open PDF
+            val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/pdf")
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            }
+            context.startActivity(intent)
+        }
+    }
+
     fun addUser(username: String, password: String, name: String, role: String, callback: (Boolean) -> Unit) {
         usersRef.child(username).get()
             .addOnSuccessListener { snapshot ->
@@ -127,7 +319,9 @@ class FirebaseDatabaseHelper {
                     if (existingUser != null && !existingUser.enabled) {
                         callback(false)
                     } else {
-                        val user = User(username, password, name, role, enabled = true)
+                        val hashedPassword = PasswordUtils.hashPassword(password)
+                        val user = User(username, hashedPassword, name, role, enabled = true)
+
                         usersRef.child(username).setValue(user)
                             .addOnSuccessListener {
                                 callback(true)
@@ -166,7 +360,7 @@ class FirebaseDatabaseHelper {
                 for (childSnapshot in snapshot.children) {
                     val user = childSnapshot.getValue(User::class.java)
                     if (user != null && user.username == username && user.enabled) {
-                        if (user.password == password) {
+                        if (PasswordUtils.verifyPassword(password, user.password)) {
                             SessionManager.saveUsername(user.username)
                             isUserValid = true
                             break
@@ -212,7 +406,8 @@ class FirebaseDatabaseHelper {
                 val user = snapshot.getValue<User>()
                 if (user != null && user.enabled) {
                     if (user.password == currentPassword) {
-                        usersRef.child(username).child("password").setValue(newPassword)
+                        val hashedNewPassword = PasswordUtils.hashPassword(newPassword)
+                        usersRef.child(username).child("password").setValue(hashedNewPassword)
                             .addOnSuccessListener {
                                 callback(true)
                             }
@@ -446,22 +641,22 @@ class FirebaseDatabaseHelper {
         })
     }
 
-    fun fetchNotifications(callback: (List<Notification>) -> Unit) {
+    fun fetchNotifications(callback: (List<NotificationItem>) -> Unit) {
         notificationsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val notificationsList = mutableListOf<Notification>()
+                val notificationsList = mutableListOf<LocalNotification>()
                 for (notificationSnapshot in snapshot.children) {
                     val notification = notificationSnapshot.getValue(Notification::class.java)
                     if (notification != null && notification.enabled) {
-                        notificationsList.add(notification)
+                        notificationsList.add(notification.toLocalNotification())
                     } else {
                         Log.e("FetchNotifications", "Notification is null or not enabled: $notificationSnapshot")
                     }
                 }
 
-                val reversedNotificationsList = notificationsList.asReversed()
+                val groupedNotifications = groupNotificationsByDate(notificationsList)
 
-                callback(reversedNotificationsList)
+                callback(groupedNotifications)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -470,6 +665,22 @@ class FirebaseDatabaseHelper {
             }
         })
     }
+
+
+
+    fun groupNotificationsByDate(notifications: List<LocalNotification>): List<NotificationItem> {
+        return notifications
+            .sortedByDescending { it.date }
+            .groupBy { it.date }
+            .flatMap { (date, notifs) ->
+                listOf(NotificationItem.DateHeader(date)) + notifs.map {
+                    NotificationItem.NotificationEntry(it.toNotification())
+                }
+            }
+    }
+
+
+
 
     fun fetchItems(callback: (List<Item>) -> Unit) {
         itemsRef.addValueEventListener(object : ValueEventListener {
@@ -747,35 +958,39 @@ class FirebaseDatabaseHelper {
                             .getReference("notifications")
                             .child(itemCode)
 
-                        if (stocksLeft < 20) {
-                            val notification = Notification(
-                                itemCode = itemCode,
-                                date = currentDate,
-                                icon = "critical",
-                                details = "Stocks for [${item.itemName}] are critically low. Stocks Left: [$stocksLeft]",
-                                enabled = true
-                            )
-                            notificationRef.setValue(notification)
-                        } else if (stocksLeft < 50) {
-                            val notification = Notification(
-                                itemCode = itemCode,
-                                date = currentDate,
-                                icon = "low",
-                                details = "Stocks for [${item.itemName}] are low. Stocks Left: [$stocksLeft]",
-                                enabled = true
-                            )
-                            notificationRef.setValue(notification)
-                        } else {
-                            //notificationRef.removeValue()
-                            notificationRef.get().addOnSuccessListener { notificationSnapshot ->
-                                if (notificationSnapshot.exists()) {
+                        notificationRef.get().addOnSuccessListener { notificationSnapshot ->
+                            val existingNotification = notificationSnapshot.getValue(Notification::class.java)
+
+                            val newNotification = when {
+                                stocksLeft < 20 -> Notification(
+                                    itemCode = itemCode,
+                                    date = currentDate,
+                                    icon = "critical",
+                                    details = "Stocks for [${item.itemName}] are critically low. Stocks Left: [$stocksLeft]",
+                                    enabled = true
+                                )
+                                stocksLeft < 50 -> Notification(
+                                    itemCode = itemCode,
+                                    date = currentDate,
+                                    icon = "low",
+                                    details = "Stocks for [${item.itemName}] are low. Stocks Left: [$stocksLeft]",
+                                    enabled = true
+                                )
+                                else -> null
+                            }
+
+                            if (newNotification != null) {
+                                if (existingNotification == null || existingNotification.details != newNotification.details) {
+                                    notificationRef.setValue(newNotification)
+                                }
+                            } else {
+                                if (existingNotification != null && existingNotification.enabled) {
                                     notificationRef.child("enabled").setValue(false)
                                 }
                             }
                         }
                     }
                 }
-
                 callback(true)
             }
 
@@ -785,4 +1000,25 @@ class FirebaseDatabaseHelper {
             }
         })
     }
+
+
+    fun listenForStockChanges() {
+        itemsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                Log.d("StockMonitor", "Stock levels changed, triggering monitorStockLevels()")
+                monitorStockLevels { success ->
+                    if (success) {
+                        Log.d("StockMonitor", "Stock monitoring updated successfully")
+                    } else {
+                        Log.e("StockMonitor", "Failed to update stock monitoring")
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("StockMonitor", "Failed to listen for stock changes: ${error.message}")
+            }
+        })
+    }
+
 }

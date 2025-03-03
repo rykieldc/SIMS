@@ -9,6 +9,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class UserDashboard : Fragment() {
 
@@ -55,9 +59,24 @@ class UserDashboard : Fragment() {
         val usernameTextView = view?.findViewById<TextView>(R.id.header_dashboard)
 
         if (!savedUsername.isNullOrEmpty()) {
-            FirebaseDatabaseHelper().checkUserData(savedUsername) { user ->
-                val displayName = user.name
-                usernameTextView?.text = "Hello, $displayName!"
+            val userDao = App.database.userDao()
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                // Try to get user data from Room Database first
+                val localUser = userDao.getUserByUsername(savedUsername)
+
+                withContext(Dispatchers.Main) {
+                    if (localUser != null) {
+                        val displayName = localUser.name
+                        usernameTextView?.text = "Hello, $displayName!"
+                    } else {
+                        // If no local data, fetch from Firestore
+                        FirebaseDatabaseHelper().checkUserData(savedUsername) { user ->
+                            val displayName = user.name
+                            usernameTextView?.text = "Hello, $displayName!"
+                        }
+                    }
+                }
             }
         } else {
             usernameTextView?.text = "Hello, !"

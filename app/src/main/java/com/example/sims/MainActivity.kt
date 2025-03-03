@@ -10,13 +10,17 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigationView: BottomNavigationView
-    private lateinit var firebaseHelper: FirebaseDatabaseHelper
     private var userRole: String? = null
+    private val firebaseHelper = FirebaseDatabaseHelper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +28,14 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        val userDao = App.database.userDao()
+
+        firebaseHelper.listenForStockChanges()
+
+        firebaseHelper.syncUsersToRoom(userDao)
+        firebaseHelper.syncItemsToRoom(App.database.itemDao())
+        firebaseHelper.syncHistoryToRoom(App.database.historyDao())
+        firebaseHelper.syncNotificationsToRoom(App.database.notificationDao())
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             if (!isDestroyed && !isFinishing) {
@@ -33,29 +45,33 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
-        firebaseHelper = FirebaseDatabaseHelper()
 
         val savedUsername = SessionManager.getUsername()
 
         if (!savedUsername.isNullOrEmpty()) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                val localUser = userDao.getUserByUsername(savedUsername)
+
+                withContext(Dispatchers.Main) {
+                    if (localUser != null) {
+                        userRole = localUser.role
+                        setupInitialFragment()
+                        setupBottomNavigation()
+                    }
+                }
+            }
+
             firebaseHelper.checkUserData(savedUsername) { userData ->
                 userRole = userData.role
-                if (!isFinishing && !isDestroyed) {
-                    setupInitialFragment()
-                    setupBottomNavigation()
-                } else {
-                    Log.w("MainActivity", "Activity is no longer valid; skipping initial setup.")
+                runOnUiThread {
+                    if (!isFinishing && !isDestroyed) {
+                        setupInitialFragment()
+                    }
                 }
-
             }
-        } else {
-            Log.e("MainActivity", "No saved username found; redirecting to login.")
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
         }
     }
 
@@ -98,7 +114,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun replaceFragment(fragment: Fragment) {
         if (!isFinishing && !supportFragmentManager.isDestroyed) {
             supportFragmentManager.beginTransaction()
@@ -108,5 +123,4 @@ class MainActivity : AppCompatActivity() {
             Log.w("MainActivity", "Skipped replacing fragment; Activity is finishing or FragmentManager is destroyed.")
         }
     }
-
 }

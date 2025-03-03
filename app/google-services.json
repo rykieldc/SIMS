@@ -3,7 +3,7 @@
     "project_number": "59079324356",
     "firebase_url": "https://sims-1d535-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "sims-1d535",
-    "storage_bucket": "sims-1d535.appspot.com"
+    "storage_bucket": "sims-1d535.firebasestorage.app"
   },
   "client": [
     {

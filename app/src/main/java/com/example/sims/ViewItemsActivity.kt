@@ -2,7 +2,10 @@ package com.example.sims
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -21,8 +24,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ViewItemsActivity : AppCompatActivity() {
 
@@ -183,28 +190,102 @@ class ViewItemsActivity : AppCompatActivity() {
     @SuppressLint("NotifyDataSetChanged")
     private fun fetchItemsFromDatabase() {
         val databaseHelper = FirebaseDatabaseHelper()
-        databaseHelper.fetchItems { itemsList ->
-            productList.clear()
-            productList.addAll(itemsList.map { item ->
-                Product(
-                    itemCode = item.itemCode,
-                    itemName = item.itemName,
-                    itemCategory = item.itemCategory,
-                    itemWeight = "${item.itemWeight} g",
-                    location = item.location,
-                    supplier = item.supplier,
-                    stocksLeft = "${item.stocksLeft} unit(s)",
-                    dateAdded = item.dateAdded,
-                    lastRestocked = item.lastRestocked,
-                    imageUrl = item.imageUrl
-                )
-            })
+        val localDatabase = AppDatabase.getDatabase(this).itemDao()
 
-            recyclerViewProductAdapter?.apply {
-                originalList.clear()
-                originalList.addAll(productList)
-                notifyDataSetChanged()
+        if (!isInternetAvailable()) {
+            // No internet: Load from Room database
+            lifecycleScope.launch(Dispatchers.IO) {
+                val cachedItems = localDatabase.getAllItems()
+                withContext(Dispatchers.Main) {
+                    if (cachedItems.isNotEmpty()) {
+                        updateProductList(cachedItems.map { it.toProduct() })
+                    } else {
+                        noProductsText.text = "No products available offline."
+                        noProductsText.visibility = View.VISIBLE
+                    }
+                }
+            }
+        } else {
+            // Internet available: Fetch from Firestore
+            databaseHelper.fetchItems { itemsList ->
+                val products = itemsList.map { item ->
+                    Product(
+                        itemCode = item.itemCode,
+                        itemName = item.itemName,
+                        itemCategory = item.itemCategory,
+                        itemWeight = "${item.itemWeight} g",
+                        location = item.location,
+                        supplier = item.supplier,
+                        stocksLeft = "${item.stocksLeft} unit(s)",
+                        dateAdded = item.dateAdded,
+                        lastRestocked = item.lastRestocked,
+                        imageUrl = item.imageUrl
+                    )
+                }
+
+                // Save data to Room for offline access
+                lifecycleScope.launch(Dispatchers.IO) {
+                    localDatabase.insertAll(products.map { it.toProductEntity() })
+                }
+
+                updateProductList(products)
             }
         }
     }
+
+    fun LocalItem.toProduct(): Product {
+        return Product(
+            itemCode = this.itemCode,
+            itemName = this.itemName,
+            itemCategory = this.itemCategory,
+            itemWeight = "${this.itemWeight} g",
+            location = this.location,
+            supplier = this.supplier,
+            stocksLeft = "${this.stocksLeft} unit(s)",
+            dateAdded = this.dateAdded,
+            lastRestocked = this.lastRestocked,
+            imageUrl = this.imageUrl
+        )
+    }
+
+
+    fun Product.toProductEntity(): LocalItem {
+        return LocalItem(
+            itemCode = this.itemCode,
+            itemName = this.itemName,
+            itemCategory = this.itemCategory,
+            itemWeight = this.itemWeight.replace(" g", "").toFloatOrNull() ?: 0f,
+            location = this.location,
+            supplier = this.supplier,
+            stocksLeft = this.stocksLeft.replace(" unit(s)", "").toIntOrNull() ?: 0,
+            dateAdded = this.dateAdded,
+            lastRestocked = this.lastRestocked,
+            enabled = true,
+            imageUrl = this.imageUrl
+        )
+    }
+
+
+    // Update RecyclerView with new data
+    private fun updateProductList(products: List<Product>) {
+        productList.clear()
+        productList.addAll(products)
+
+        recyclerViewProductAdapter?.apply {
+            originalList.clear()
+            originalList.addAll(productList)
+            notifyDataSetChanged()
+        }
+
+        noProductsText.visibility = if (products.isEmpty()) View.VISIBLE else View.GONE
+    }
+
+    // Check Internet Connection
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork
+        val capabilities = connectivityManager.getNetworkCapabilities(network)
+        return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
 }

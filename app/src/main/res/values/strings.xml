@@ -70,6 +70,7 @@
     <string name="confirm_new_password">Confirm New Password</string>
     <string name="history">History</string>
     <string name="manage_users">Manage Users</string>
+    <string name="generate_reports">Generate Reports</string>
     <string name="add_user">Add User</string>
     <string name="ic_add_user">Add User Icon</string>
     <string name="search">Search</string>

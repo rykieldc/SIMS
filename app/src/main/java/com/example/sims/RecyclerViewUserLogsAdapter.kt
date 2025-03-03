@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
 class RecyclerViewUserLogsAdapter(
-    private var logsList: MutableList<UserLogs> = mutableListOf(),
+    private var logsList: MutableList<LocalHistory>,
     private val context: Context
 ) : RecyclerView.Adapter<RecyclerViewUserLogsAdapter.LogsViewHolder>() {
 
@@ -40,7 +40,7 @@ class RecyclerViewUserLogsAdapter(
     }
 
     @SuppressLint("SetTextI18n")
-    private fun showDialog(userLog: UserLogs) {
+    private fun showDialog(userLog: LocalHistory) {
         val dialogLayout = when {
             userLog.action.startsWith("Added Item") || userLog.action.startsWith("Deleted Item") -> {
                 R.layout.dialog_log_add_and_delete
@@ -116,7 +116,7 @@ class RecyclerViewUserLogsAdapter(
         updateLogsList(originalList)
     }
 
-    private fun updateLogsList(newList: List<UserLogs>) {
+    private fun updateLogsList(newList: List<LocalHistory>) {
         val diffCallback = LogDiffCallback(logsList, newList)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         logsList.clear()
@@ -124,9 +124,10 @@ class RecyclerViewUserLogsAdapter(
         diffResult.dispatchUpdatesTo(this)
     }
 
+
     class LogDiffCallback(
-        private val oldList: List<UserLogs>,
-        private val newList: List<UserLogs>
+        private val oldList: List<LocalHistory>,
+        private val newList: List<LocalHistory>
     ) : DiffUtil.Callback() {
         override fun getOldListSize(): Int = oldList.size
         override fun getNewListSize(): Int = newList.size
@@ -135,4 +136,5 @@ class RecyclerViewUserLogsAdapter(
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
             oldList[oldItemPosition] == newList[newItemPosition]
     }
+
 }
