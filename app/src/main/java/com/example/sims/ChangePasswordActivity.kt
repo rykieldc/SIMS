@@ -120,6 +120,17 @@ class ChangePasswordActivity : AppCompatActivity() {
             return
         }
 
+        if (newPassword.length < 8) {
+            Toast.makeText(this, "Password must be at least 8 characters", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (!newPassword.any { it.isDigit() }) {
+            Toast.makeText(this, "Password must contain at least one number", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+
         if (newPassword != confirmPassword) {
             Toast.makeText(this, "New passwords do not match", Toast.LENGTH_SHORT).show()
             return

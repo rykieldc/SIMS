@@ -1,12 +1,16 @@
 package com.example.sims
 
 import SessionManager
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -31,25 +35,25 @@ class UserDashboard : Fragment() {
         val viewItemCardView = view.findViewById<CardView>(R.id.cvViewItem)
         val deleteItemCardView = view.findViewById<CardView>(R.id.cvDeleteItem)
 
-        addItemCardView.setOnClickListener {
-            val intent = Intent(requireContext(), AddItemActivity::class.java)
-            startActivity(intent)
-        }
+        addItemCardView.setOnClickListener { handleClick(AddItemActivity::class.java) }
+        editItemCardView.setOnClickListener { handleClick(EditItemsActivityList::class.java) }
+        viewItemCardView.setOnClickListener { startActivity(Intent(requireContext(), ViewItemsActivity::class.java)) }
+        deleteItemCardView.setOnClickListener { handleClick(DeleteItemsActivityList::class.java) }
+    }
 
-        editItemCardView.setOnClickListener {
-            val intent = Intent(requireContext(), EditItemsActivityList::class.java)
-            startActivity(intent)
+    private fun handleClick(activityClass: Class<*>) {
+        if (isInternetAvailable()) {
+            startActivity(Intent(requireContext(), activityClass))
+        } else {
+            Toast.makeText(requireContext(), "No internet connection. Cannot proceed.", Toast.LENGTH_SHORT).show()
         }
+    }
 
-        viewItemCardView.setOnClickListener {
-            val intent = Intent(requireContext(), ViewItemsActivity::class.java)
-            startActivity(intent)
-        }
-
-        deleteItemCardView.setOnClickListener {
-            val intent = Intent(requireContext(), DeleteItemsActivityList::class.java)
-            startActivity(intent)
-        }
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     override fun onResume() {
@@ -62,7 +66,6 @@ class UserDashboard : Fragment() {
             val userDao = App.database.userDao()
 
             lifecycleScope.launch(Dispatchers.IO) {
-                // Try to get user data from Room Database first
                 val localUser = userDao.getUserByUsername(savedUsername)
 
                 withContext(Dispatchers.Main) {
@@ -70,7 +73,6 @@ class UserDashboard : Fragment() {
                         val displayName = localUser.name
                         usernameTextView?.text = "Hello, $displayName!"
                     } else {
-                        // If no local data, fetch from Firestore
                         FirebaseDatabaseHelper().checkUserData(savedUsername) { user ->
                             val displayName = user.name
                             usernameTextView?.text = "Hello, $displayName!"

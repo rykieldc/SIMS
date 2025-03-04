@@ -23,6 +23,7 @@ import com.itextpdf.layout.element.Paragraph
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.mindrot.jbcrypt.BCrypt
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -319,7 +320,11 @@ class FirebaseDatabaseHelper {
                     if (existingUser != null && !existingUser.enabled) {
                         callback(false)
                     } else {
-                        val hashedPassword = PasswordUtils.hashPassword(password)
+                        val hashedPassword = if (password.startsWith("$2a$") || password.startsWith("$2b$") || password.startsWith("$2y$")) {
+                            password
+                        } else {
+                            PasswordUtils.hashPassword(password)
+                        }
                         val user = User(username, hashedPassword, name, role, enabled = true)
 
                         usersRef.child(username).setValue(user)
@@ -405,8 +410,8 @@ class FirebaseDatabaseHelper {
             if (snapshot.exists()) {
                 val user = snapshot.getValue<User>()
                 if (user != null && user.enabled) {
-                    if (user.password == currentPassword) {
-                        val hashedNewPassword = PasswordUtils.hashPassword(newPassword)
+                    if (BCrypt.checkpw(currentPassword, user.password)) {
+                        val hashedNewPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt())
                         usersRef.child(username).child("password").setValue(hashedNewPassword)
                             .addOnSuccessListener {
                                 callback(true)
@@ -427,6 +432,7 @@ class FirebaseDatabaseHelper {
             callback(false)
         }
     }
+
 
     fun fetchUsers(callback: (List<User>) -> Unit) {
         usersRef.addValueEventListener(object : ValueEventListener {

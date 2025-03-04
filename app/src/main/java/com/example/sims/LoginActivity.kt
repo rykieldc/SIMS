@@ -48,18 +48,21 @@ class LoginActivity : AppCompatActivity() {
             }
 
             lifecycleScope.launch {
-                val localUser = checkRoomDatabase(username, password)
-
-                if (localUser != null) {
-                    navigateToMainActivity()
-                } else if (isInternetAvailable()) {
+                if (isInternetAvailable()) {
+                    // Step 1: Check Firebase login first
                     checkFirebaseLogin(username, password)
                 } else {
-                    Toast.makeText(
-                        this@LoginActivity,
-                        "Invalid login. Check internet for first-time login.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    // Step 2: If no internet, check Room database
+                    val localUser = checkRoomDatabase(username, password)
+                    if (localUser != null) {
+                        navigateToMainActivity()
+                    } else {
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "Invalid login. Check internet for first-time login.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
@@ -75,14 +78,19 @@ class LoginActivity : AppCompatActivity() {
         return withContext(Dispatchers.IO) {
             val user = userDao.getUserByUsername(username)
             if (user != null) {
-                Log.d("LoginDebug", "Found user in Room: $user")
-                Log.d("LoginDebug", "Entered password: $password, Stored password: ${user.password}")
+                Log.d("LoginDebug", "Found user in Room: ${user.username}")
 
-                if (BCrypt.checkpw(password, user.password)) {
+                if (!user.password.startsWith("$2a$") && !user.password.startsWith("$2b$") && !user.password.startsWith("$2y$")) {
+                    Log.e("LoginDebug", "ERROR: Stored password is NOT a valid BCrypt hash!")
+                    return@withContext null
+                }
+
+                return@withContext if (BCrypt.checkpw(password, user.password)) {
                     Log.d("LoginDebug", "Password match! Logging in...")
-                    return@withContext user
+                    user
                 } else {
-                    Log.d("LoginDebug", "Password mismatch!")
+                    Log.e("LoginDebug", "Password mismatch!")
+                    null
                 }
             } else {
                 Log.d("LoginDebug", "User not found in Room!")
@@ -91,30 +99,49 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-
     private fun checkFirebaseLogin(username: String, password: String) {
         firebaseHelper.checkUser(username, password) { isUserValid ->
             if (isUserValid) {
                 firebaseHelper.checkUserData(username) { user ->
                     if (user.username.isNotEmpty()) {
-                        saveUserToRoom(user)
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            val localUser = userDao.getUserByUsername(user.username)
 
-                        navigateToMainActivity()
+                            if (localUser == null || localUser.password != user.password || localUser.role != user.role || localUser.name != user.name) {
+                                Log.d("LoginDebug", "User data changed or new user detected. Updating Room Database...")
+                                saveUserToRoom(user)
+                            }
+
+                            withContext(Dispatchers.Main) {
+                                navigateToMainActivity()
+                            }
+                        }
                     } else {
                         Toast.makeText(this, "User details not found", Toast.LENGTH_SHORT).show()
                     }
                 }
             } else {
-                Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch {
+                    val localUser = checkRoomDatabase(username, password)
+                    if (localUser != null) {
+                        navigateToMainActivity()
+                    } else {
+                        Toast.makeText(this@LoginActivity, "Invalid username or password", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
     }
 
     private fun saveUserToRoom(user: User) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val hashedPassword = BCrypt.hashpw(user.password, BCrypt.gensalt())
-
-            Log.d("LoginDebug", "Saving user to Room: ${user.username}, Hashed Password: $hashedPassword")
+            val hashedPassword = if (user.password.startsWith("$2a$") || user.password.startsWith("$2b$") || user.password.startsWith("$2y$")) {
+                Log.d("LoginDebug", "Password already hashed, using as is.")
+                user.password
+            } else {
+                Log.d("LoginDebug", "Hashing password before saving...")
+                BCrypt.hashpw(user.password, BCrypt.gensalt())
+            }
 
             userDao.insert(
                 LocalUser(
@@ -129,8 +156,6 @@ class LoginActivity : AppCompatActivity() {
             Log.d("LoginDebug", "User successfully saved in Room!")
         }
     }
-
-
 
     private fun isInternetAvailable(): Boolean {
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
