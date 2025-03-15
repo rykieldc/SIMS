@@ -83,7 +83,6 @@
                         android:textColor="@color/white"
                         android:textStyle="bold"
                         app:cornerRadius="10dp"
-                        app:iconPadding="0dp"
                         tools:ignore="ButtonStyle,TextContrastCheck,TextSizeCheck" />
 
                     <Button
@@ -97,7 +96,6 @@
                         android:textAllCaps="true"
                         android:textStyle="bold"
                         app:cornerRadius="10dp"
-                        app:iconPadding="0dp"
                         tools:ignore="ButtonStyle,TextContrastCheck" />
                 </LinearLayout>
 
@@ -139,7 +137,6 @@
                         android:textAllCaps="true"
                         android:textStyle="bold"
                         app:cornerRadius="10dp"
-                        app:iconPadding="0dp"
                         tools:ignore="ButtonStyle,TextContrastCheck" />
                 </LinearLayout>
 

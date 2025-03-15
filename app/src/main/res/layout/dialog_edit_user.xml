@@ -157,13 +157,14 @@
                     android:id="@+id/cancelBtn"
                     android:layout_width="130dp"
                     android:layout_height="wrap_content"
+                    android:backgroundTint="@color/cancel_color"
                     android:fontFamily="@font/poppins_black"
                     android:text="@string/cancel"
                     android:textAllCaps="true"
+                    android:textColor="@color/white"
                     android:textStyle="bold"
                     app:cornerRadius="10dp"
-                    app:icon="@drawable/ic_xmark_circle"
-                    app:iconPadding="0dp"
+                    android:drawableStart="@drawable/ic_xmark_circle"
                     tools:ignore="ButtonStyle,TextContrastCheck"
                     tools:layout_editor_absoluteY="728dp" />
 
@@ -176,10 +177,10 @@
                     android:fontFamily="@font/poppins_black"
                     android:text="@string/save"
                     android:textAllCaps="true"
+                    android:textColor="@color/white"
                     android:textStyle="bold"
                     app:cornerRadius="10dp"
-                    app:icon="@drawable/ic_save"
-                    app:iconPadding="0dp"
+                    android:drawableStart="@drawable/ic_save"
                     tools:ignore="ButtonStyle,TextContrastCheck"
                     tools:layout_editor_absoluteY="731dp" />
 
