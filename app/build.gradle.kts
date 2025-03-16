@@ -85,5 +85,7 @@ dependencies {
     implementation(libs.kernel.android)
     implementation(libs.layout.android)
 
+        implementation (libs.retrofit)
+        implementation (libs.converter.gson)
 
 }
