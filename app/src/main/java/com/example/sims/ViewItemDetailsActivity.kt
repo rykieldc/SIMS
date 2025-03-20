@@ -22,8 +22,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
+import com.google.firebase.database.*
 
-@Suppress("DEPRECATION")
 class ViewItemDetailsActivity : AppCompatActivity() {
 
     private lateinit var header: TextView
@@ -39,6 +39,10 @@ class ViewItemDetailsActivity : AppCompatActivity() {
     private lateinit var itemLastRestocked: TextView
     private lateinit var editButton: Button
     private lateinit var deleteButton: Button
+
+    private lateinit var databaseReference: DatabaseReference
+    private var itemCodeValue: String? = null
+    private var itemListener: ValueEventListener? = null
 
     companion object {
         private const val REQUEST_CODE_EDIT_ITEM = 1001
@@ -81,43 +85,26 @@ class ViewItemDetailsActivity : AppCompatActivity() {
         itemDateAdded = findViewById(R.id.itemDateAdded)
         itemLastRestocked = findViewById(R.id.itemLastRestocked)
 
-        val productImgUrl = intent.getStringExtra("productImg")
-        productImgUrl?.let { imageUrl ->
-            Glide.with(this)
-                .load(imageUrl)
-                .placeholder(R.drawable.ic_img_placeholder)
-                .error(R.drawable.ic_img_placeholder)
-                .into(itemImg)
+        itemCodeValue = intent.getStringExtra("productCode")
+
+        databaseReference = FirebaseDatabase.getInstance().getReference("items")
+
+        itemCodeValue?.let { code ->
+            fetchItemDetails(code)
+            listenForRealTimeUpdates(code)
         }
-        itemName.text = intent.getStringExtra("productName")
-        itemUnits.text = intent.getStringExtra("productNum") ?: "N/A"
-        itemWeight.text = intent.getStringExtra("productWeight") ?: "N/A"
-        itemCode.text = intent.getStringExtra("productCode")
-        itemCategory.text = intent.getStringExtra("productCategory")
-        itemLocation.text = intent.getStringExtra("productLocation")
-        itemSupplier.text = intent.getStringExtra("productSupplier")
-        itemDateAdded.text = intent.getStringExtra("dateAdded")
-        itemLastRestocked.text = intent.getStringExtra("lastRestocked")
 
         editButton = findViewById(R.id.editBtn)
         editButton.setOnClickListener {
-            val intent = Intent(this, EditItemActivity::class.java)
-            intent.putExtra("productImg", productImgUrl)
-            intent.putExtra("productName", itemName.text.toString())
-            intent.putExtra("productNum", itemUnits.text.toString())
-            intent.putExtra("productWeight", itemWeight.text.toString())
-            intent.putExtra("productCode", itemCode.text.toString())
-            intent.putExtra("productCategory", itemCategory.text.toString())
-            intent.putExtra("productLocation", itemLocation.text.toString())
-            intent.putExtra("productSupplier", itemSupplier.text.toString())
-            intent.putExtra("dateAdded", itemDateAdded.text.toString())
-            intent.putExtra("lastRestocked", itemLastRestocked.text.toString())
+            val intent = Intent(this, EditItemActivity::class.java).apply {
+                putExtra("productCode", itemCodeValue)
+            }
             startActivityForResult(intent, REQUEST_CODE_EDIT_ITEM)
         }
 
         deleteButton = findViewById(R.id.deleteBtn)
         deleteButton.setOnClickListener {
-            showDeleteConfirmationDialog(itemCode.text.toString())
+            itemCodeValue?.let { code -> showDeleteConfirmationDialog(code) }
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -127,26 +114,38 @@ class ViewItemDetailsActivity : AppCompatActivity() {
         }
     }
 
-    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_EDIT_ITEM && resultCode == Activity.RESULT_OK) {
-            val updateStatus = data?.getBooleanExtra("updateStatus", false) ?: false
-            if (updateStatus) {
-                val updatedItem: Item? = data?.getParcelableExtra("updatedItem")
-                updatedItem?.let {
-                    refreshItemDetails(it)
-                }
-                setResult(Activity.RESULT_OK, Intent().apply { putExtra("updateStatus", true) })
+    private fun fetchItemDetails(itemCode: String) {
+        FirebaseDatabaseHelper().getItemByCode(itemCode) { item ->
+            if (item != null) {
+                refreshItemDetails(item)
+            } else {
+                Toast.makeText(this, "Item not found", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    private fun listenForRealTimeUpdates(itemCode: String) {
+        itemListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (child in snapshot.children) {
+                    val updatedItem = child.getValue(Item::class.java)
+                    updatedItem?.let { refreshItemDetails(it) }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@ViewItemDetailsActivity, "Failed to load updates", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        databaseReference.orderByChild("itemCode").equalTo(itemCode)
+            .addValueEventListener(itemListener!!)
+    }
+
     private fun refreshItemDetails(updatedItem: Item) {
         itemName.text = updatedItem.itemName
-        "${updatedItem.stocksLeft} units".also { itemUnits.text = it }
-
-        "${updatedItem.itemWeight} g".also { itemWeight.text = it }
+        itemUnits.text = "${updatedItem.stocksLeft} units"
+        itemWeight.text = "${updatedItem.itemWeight} g"
         itemCode.text = updatedItem.itemCode
         itemCategory.text = updatedItem.itemCategory
         itemLocation.text = updatedItem.location
@@ -161,9 +160,10 @@ class ViewItemDetailsActivity : AppCompatActivity() {
             .into(itemImg)
     }
 
-    class DrawableClickSpan(private val clickListener: () -> Unit) : ClickableSpan() {
-        override fun onClick(widget: View) {
-            clickListener()
+    override fun onDestroy() {
+        super.onDestroy()
+        itemListener?.let {
+            databaseReference.removeEventListener(it)
         }
     }
 
@@ -177,8 +177,7 @@ class ViewItemDetailsActivity : AppCompatActivity() {
             .create()
 
         deleteButton.setOnClickListener {
-            val databaseHelper = FirebaseDatabaseHelper()
-            databaseHelper.setItemEnabled(itemCode, false) { success ->
+            FirebaseDatabaseHelper().setItemEnabled(itemCode, false) { success ->
                 if (success) {
                     Toast.makeText(this, "Item deleted successfully", Toast.LENGTH_SHORT).show()
                     setResult(Activity.RESULT_OK, Intent().apply { putExtra("updateStatus", true) })
@@ -195,5 +194,11 @@ class ViewItemDetailsActivity : AppCompatActivity() {
         }
 
         dialog.show()
+    }
+
+    class DrawableClickSpan(private val clickListener: () -> Unit) : ClickableSpan() {
+        override fun onClick(widget: View) {
+            clickListener()
+        }
     }
 }

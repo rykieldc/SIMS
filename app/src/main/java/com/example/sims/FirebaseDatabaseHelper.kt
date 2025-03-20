@@ -736,6 +736,25 @@ class FirebaseDatabaseHelper {
             })
     }
 
+    fun getItemByCode(itemCode: String, callback: (Item?) -> Unit) {
+        val dbRef = FirebaseDatabase.getInstance().getReference("items")
+        dbRef.orderByChild("itemCode").equalTo(itemCode)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (child in snapshot.children) {
+                        val item = child.getValue(Item::class.java)
+                        callback(item)
+                        return
+                    }
+                    callback(null)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    callback(null)
+                }
+            })
+    }
+
 
     fun saveItem(item: Item, callback: (Boolean) -> Unit) {
         val itemCode = item.itemCode
