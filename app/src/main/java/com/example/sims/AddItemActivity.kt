@@ -3,9 +3,12 @@ package com.example.sims
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.method.LinkMovementMethod
@@ -29,7 +32,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -42,9 +47,11 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.http.InputStreamContent
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
-import com.google.api.services.drive.model.File
+import com.google.api.services.drive.model.File as DriveFile
 import com.google.api.services.drive.model.Permission
+import java.io.IOException
 import java.util.Calendar
+import java.io.File
 
 class AddItemActivity : AppCompatActivity() {
     private lateinit var firebaseDatabaseHelper: FirebaseDatabaseHelper
@@ -59,6 +66,7 @@ class AddItemActivity : AppCompatActivity() {
     private lateinit var unitsEditText: EditText
     private lateinit var supplierEditText: EditText
     private lateinit var imageChooserLauncher: ActivityResultLauncher<Intent>
+    private lateinit var cameraLauncher: ActivityResultLauncher<Intent>
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var driveService: Drive
 
@@ -95,6 +103,12 @@ class AddItemActivity : AppCompatActivity() {
             }
         }
 
+        cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                uploadImg.setImageURI(imageUri)  // Display the captured image
+            }
+        }
+
         val saveButton = findViewById<Button>(R.id.saveBtn)
         saveButton.setOnClickListener {
             if (validateInputs()) {
@@ -112,11 +126,49 @@ class AddItemActivity : AppCompatActivity() {
         setupImageChooser()
         setupDatePickers()
         setupGoogleSignIn()
+        checkAndRequestPermissions()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+    }
+
+    private fun createImageFile(): File? {
+        val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return try {
+            File.createTempFile(
+                "JPEG_${System.currentTimeMillis()}",
+                ".jpg",
+                storageDir
+            )
+        } catch (ex: IOException) {
+            null
+        }
+    }
+
+    private val PERMISSION_REQUEST_CODE = 101
+
+    private fun checkAndRequestPermissions(): Boolean {
+        val permissionsNeeded = mutableListOf<String>()
+
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(android.Manifest.permission.CAMERA)
+        }
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+
+        return if (permissionsNeeded.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, permissionsNeeded.toTypedArray(), PERMISSION_REQUEST_CODE)
+            false
+        } else {
+            openCamera()
+            true
         }
     }
 
@@ -220,14 +272,6 @@ class AddItemActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-    fun openImageChooser(view: View) {
-        val intent = Intent().apply {
-            type = "image/*"
-            action = Intent.ACTION_GET_CONTENT
-        }
-        imageChooserLauncher.launch(intent)
-    }
-
     private fun showSaveConfirmationDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_save_changes, null)
         val saveButton = dialogView.findViewById<Button>(R.id.yesBtn)
@@ -262,7 +306,7 @@ class AddItemActivity : AppCompatActivity() {
                 val imageLink = if (imageUri != null) {
                     val contentResolver = contentResolver
                     val inputStream = contentResolver.openInputStream(imageUri!!)
-                    val metadata = File().apply {
+                    val metadata = DriveFile().apply {
                         name = "uploaded_image.jpg"
                         parents = listOf("root")
                     }
@@ -460,12 +504,55 @@ class AddItemActivity : AppCompatActivity() {
 
     private fun setupImageChooser() {
         uploadImg.setOnClickListener {
-            val intent = Intent().apply {
-                type = "image/*"
-                action = Intent.ACTION_GET_CONTENT
+            val options = arrayOf("Take Photo", "Choose from Gallery")
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Select Image")
+            builder.setItems(options) { _, which ->
+                when (which) {
+                    0 -> openCamera()  // Capture a new image
+                    1 -> openGallery() // Pick an image from the gallery
+                }
             }
             imageChooserLauncher.launch(intent)
+            builder.show()
         }
+    }
+
+    private fun openCamera() {
+        try {
+            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            val photoFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "JPEG_${System.currentTimeMillis()}.jpg")
+
+            if (photoFile == null) {
+                Log.e("CameraError", "Failed to create image file")
+                showToast("Error: Unable to create image file.")
+                return
+            }
+
+            val photoURI = FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.provider",
+                photoFile
+            )
+            imageUri = photoURI
+
+            Log.d("CameraDebug", "Photo URI: $imageUri")
+
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+            cameraLauncher.launch(cameraIntent)
+
+        } catch (e: Exception) {
+            Log.e("CameraError", "Error launching camera", e)
+            showToast("Error: Failed to open camera.")
+        }
+    }
+
+    private fun openGallery() {
+        val intent = Intent().apply {
+            type = "image/*"
+            action = Intent.ACTION_GET_CONTENT
+        }
+        imageChooserLauncher.launch(intent)
     }
 
     private fun setupDatePickers() {
