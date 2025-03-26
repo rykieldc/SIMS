@@ -95,12 +95,6 @@ class ViewItemDetailsActivity : AppCompatActivity() {
         }
 
         editButton = findViewById(R.id.editBtn)
-        editButton.setOnClickListener {
-            val intent = Intent(this, EditItemActivity::class.java).apply {
-                putExtra("productCode", itemCodeValue)
-            }
-            startActivityForResult(intent, REQUEST_CODE_EDIT_ITEM)
-        }
 
         deleteButton = findViewById(R.id.deleteBtn)
         deleteButton.setOnClickListener {
@@ -158,6 +152,22 @@ class ViewItemDetailsActivity : AppCompatActivity() {
             .placeholder(R.drawable.ic_img_placeholder)
             .error(R.drawable.ic_img_placeholder)
             .into(itemImg)
+
+        editButton.setOnClickListener {
+            val intent = Intent(this, EditItemActivity::class.java).apply {
+                putExtra("productCode", updatedItem.itemCode)
+                putExtra("productName", updatedItem.itemName)
+                putExtra("productNum", "${updatedItem.stocksLeft} unit(s)")
+                putExtra("productWeight", "${updatedItem.itemWeight} g")
+                putExtra("productCategory", updatedItem.itemCategory)
+                putExtra("productLocation", updatedItem.location)
+                putExtra("productSupplier", updatedItem.supplier)
+                putExtra("dateAdded", updatedItem.dateAdded)
+                putExtra("lastRestocked", updatedItem.lastRestocked)
+                putExtra("productImg", updatedItem.imageUrl)
+            }
+            startActivityForResult(intent, REQUEST_CODE_EDIT_ITEM)
+        }
     }
 
     override fun onDestroy() {

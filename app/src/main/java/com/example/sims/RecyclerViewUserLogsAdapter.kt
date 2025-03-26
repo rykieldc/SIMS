@@ -30,7 +30,7 @@ class RecyclerViewUserLogsAdapter(
     override fun onBindViewHolder(holder: LogsViewHolder, position: Int) {
         val userLog = logsList[position]
         holder.historyDate.text = userLog.date
-        holder.historyName.text = userLog.name
+        //holder.historyName.text = userLog.name
         holder.historyAction.text = userLog.action
 
         holder.itemView.setOnClickListener {
@@ -100,7 +100,7 @@ class RecyclerViewUserLogsAdapter(
 
     class LogsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val historyDate: TextView = itemView.findViewById(R.id.history_date)
-        val historyName: TextView = itemView.findViewById(R.id.history_name)
+        //val historyName: TextView = itemView.findViewById(R.id.history_name)
         val historyAction: TextView = itemView.findViewById(R.id.history_action)
     }
 

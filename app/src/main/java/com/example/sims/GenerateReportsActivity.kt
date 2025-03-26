@@ -138,11 +138,11 @@ class GenerateReportsActivity : AppCompatActivity() {
                     val itemName = extractItemName(history.action) ?: continue
                     val stockChange = extractStockChange(history.itemDetails)
 
-                    val (consumed, restocked) = stockChanges.getOrDefault(itemName, Pair(0, 0))
-                    if (history.action.startsWith("Consumed")) {
-                        stockChanges[itemName] = Pair(consumed + stockChange.absoluteValue, restocked)
+                    val (changed, restocked) = stockChanges.getOrDefault(itemName, Pair(0, 0))
+                    if (history.action.startsWith("Changed")) {
+                        stockChanges[itemName] = Pair(changed + stockChange.absoluteValue, restocked)
                     } else if (history.action.startsWith("Restocked")) {
-                        stockChanges[itemName] = Pair(consumed, restocked + stockChange.absoluteValue)
+                        stockChanges[itemName] = Pair(changed, restocked + stockChange.absoluteValue)
                     }
                 }
             }
@@ -190,7 +190,7 @@ class GenerateReportsActivity : AppCompatActivity() {
                     val itemName = extractItemName(history.action) ?: continue
                     val stockChange = extractStockChange(history.itemDetails)
 
-                    if (history.action.startsWith("Consumed")) {
+                    if (history.action.startsWith("Changed")) {
                         salesHistory.getOrPut(itemName) { mutableListOf() }.add(stockChange.absoluteValue)
 
                         Log.d(
@@ -274,15 +274,15 @@ class GenerateReportsActivity : AppCompatActivity() {
                         for (item in itemList) {
                             val itemName = item.itemName
                             val stocksLeft = item.stocksLeft
-                            val consumed = historyList[itemName]?.sum() ?: 0
+                            val changed = historyList[itemName]?.sum() ?: 0
                             val restocked = 0 // No restocking tracking in salesData
-                            val initialStocks = stocksLeft + consumed + restocked
+                            val initialStocks = stocksLeft + changed + restocked
                             val forecastNeed = predictions.getOrDefault(itemName, 0)
                             val unitsToOrder = maxOf(0, forecastNeed - stocksLeft)
 
                             table.addCell(itemName)
                             table.addCell(initialStocks.toString())
-                            table.addCell(consumed.toString())
+                            table.addCell(changed.toString())
                             table.addCell(stocksLeft.toString())
                             table.addCell(forecastNeed.toString())
                             table.addCell(unitsToOrder.toString())
@@ -349,7 +349,7 @@ class GenerateReportsActivity : AppCompatActivity() {
     private fun extractStockChange(itemDetails: String?): Int {
         if (itemDetails.isNullOrEmpty()) return 0
 
-        val regex = Regex("Stocks Left changed from \\[(\\d+)] to \\[(\\d+)]")
+        val regex = Regex("Changed from \\[(\\d+)] to \\[(\\d+)]")
         val match = regex.find(itemDetails)
 
         return if (match != null) {

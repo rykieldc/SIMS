@@ -264,7 +264,7 @@ class FirebaseDatabaseHelper {
     private fun extractStockChange(itemDetails: String?): Int {
         if (itemDetails == null) return 0
 
-        val regex = Regex("Stocks Left changed from \\[(\\d+)] to \\[(\\d+)]")
+        val regex = Regex("Changed from \\[(\\d+)] to \\[(\\d+)]")
         val match = regex.find(itemDetails)
 
         return if (match != null) {
@@ -802,9 +802,9 @@ class FirebaseDatabaseHelper {
                     action = if (stockDifference > 0) {
                         "Restocked Item [${item.itemName}]"
                     } else {
-                        "Consumed Stock of Item [${item.itemName}]"
+                        "Changed Item [${item.itemName}]"
                     }
-                    itemDetails.append("Stocks Left changed from [${existingItem.stocksLeft}] to [${item.stocksLeft}]. ")
+                    itemDetails.append("Changed from [${existingItem.stocksLeft}] to [${item.stocksLeft}]. ")
                 }
 
                 itemsRef.child(productCode).setValue(item).addOnSuccessListener {
@@ -1047,3 +1047,4 @@ class FirebaseDatabaseHelper {
     }
 
 }
+
