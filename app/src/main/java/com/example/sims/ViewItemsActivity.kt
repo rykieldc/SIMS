@@ -89,7 +89,7 @@ class ViewItemsActivity : AppCompatActivity() {
             "Disinfectants & Antiseptics",
             "Personal Protective Equipment (PPE)",
             "Diagnostic Devices",
-            "Others"
+            "Other Items"
         )
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, filterChoices)

@@ -401,7 +401,7 @@ class AddItemActivity : AppCompatActivity() {
     }
 
     private fun setupSpinners() {
-        val categories = arrayOf("Select Category", "Syringes & Needles", "Dressings & Bandages", "Disinfectants & Antiseptics", "Personal Protective Equipment (PPE)", "Diagnostic Devices", "Others")
+        val categories = arrayOf("Select Category", "Syringes & Needles", "Dressings & Bandages", "Disinfectants & Antiseptics", "Personal Protective Equipment (PPE)", "Diagnostic Devices", "Other Items")
         val locations = arrayOf("Select Location", "Store Front", "Store Stock Room", "Porta Vaga Stock Room", "YMCA Stock Room", "Home")
         val categorySpinner: Spinner = findViewById(R.id.uploadCategory)
         val locationSpinner: Spinner = findViewById(R.id.uploadLocation)
