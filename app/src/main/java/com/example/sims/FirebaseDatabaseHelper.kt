@@ -635,9 +635,12 @@ class FirebaseDatabaseHelper {
                     }
                 }
 
-                val reversedHistoryList = historyList.asReversed()
+                // Sort by date in descending order
+                val sortedHistoryList = historyList.sortedByDescending { history ->
+                    parseDate(history.date)
+                }
 
-                callback(reversedHistoryList)
+                callback(sortedHistoryList)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -646,6 +649,17 @@ class FirebaseDatabaseHelper {
             }
         })
     }
+
+    private fun parseDate(dateString: String): Date {
+        return try {
+            val format = SimpleDateFormat("MM/dd/yy", Locale.US)
+            format.parse(dateString) ?: Date(0) // Default to epoch if parsing fails
+        } catch (e: Exception) {
+            Log.e("ParseDate", "Error parsing date: $dateString", e)
+            Date(0) // Default fallback date
+        }
+    }
+
 
     fun fetchNotifications(callback: (List<NotificationItem>) -> Unit) {
         notificationsRef.addValueEventListener(object : ValueEventListener {
