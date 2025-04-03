@@ -220,21 +220,28 @@ class GenerateReportsActivity : AppCompatActivity() {
         Log.d("REPORT_DEBUG", "generateMonthlyReport called for Month: $selectedMonth, Year: $selectedYear")
 
         databaseHelper.fetchItems { itemList ->
+            Log.d("REPORT_DEBUG", "Fetched ${itemList.size} items from database.")
+
             fetchMultiMonthHistoryData(selectedMonth, selectedYear) { historyList ->
+                Log.d("REPORT_DEBUG", "Fetched history data: ${historyList.size} items.")
+
                 if (itemList.isEmpty()) {
                     Log.d("REPORT_DEBUG", "No items found, aborting PDF generation.")
                     Toast.makeText(context, "No items available", Toast.LENGTH_SHORT).show()
                     return@fetchMultiMonthHistoryData
                 }
 
-                // Correctly prepare sales data for prediction
-                val salesData = historyList.mapValues { it.value } // No need for .mapValues { listOf(it.value.first) }
+                val salesData = historyList.mapValues { it.value }
+                Log.d("REPORT_DEBUG", "Sales data mapped: $salesData")
 
                 fetchPrediction(salesData) { predictions ->
                     if (predictions == null) {
+                        Log.e("REPORT_DEBUG", "Prediction fetch returned null.")
                         Toast.makeText(context, "Failed to fetch predictions", Toast.LENGTH_SHORT).show()
                         return@fetchPrediction
                     }
+
+                    Log.d("REPORT_DEBUG", "Predictions received: $predictions")
 
                     val downloadsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
                     var file = File(downloadsDir, "Monthly_Report_$selectedMonth-$selectedYear.pdf")
@@ -248,18 +255,25 @@ class GenerateReportsActivity : AppCompatActivity() {
                     Log.d("REPORT_DEBUG", "Saving PDF to: ${file.absolutePath}")
 
                     try {
+                        val assetManager = context.assets
+                        val templateStream = assetManager.open("report_template.pdf")
+                        val pdfReader = PdfReader(templateStream)
                         val pdfWriter = PdfWriter(FileOutputStream(file))
-                        val pdfDocument = ITextPdfDocument(pdfWriter)
-                        val document = Document(pdfDocument)
+                        val templateDocument = ITextPdfDocument(pdfReader)
+                        val newDocument = ITextPdfDocument(pdfWriter)
+                        val document = Document(newDocument)
+
+                        templateDocument.copyPagesTo(1, 1, newDocument)
 
                         val monthNames = mapOf(
                             "01" to "January", "02" to "February", "03" to "March", "04" to "April",
                             "05" to "May", "06" to "June", "07" to "July", "08" to "August",
                             "09" to "September", "10" to "October", "11" to "November", "12" to "December"
                         )
-
                         val monthName = monthNames[selectedMonth] ?: "Unknown"
 
+
+                        document.add(Paragraph("\n\n\n\n\n\n\n")) // Spacing after template content
                         document.add(Paragraph("Monthly Inventory Report"))
                         document.add(Paragraph("Report Date: $monthName $selectedYear"))
 
@@ -275,10 +289,12 @@ class GenerateReportsActivity : AppCompatActivity() {
                             val itemName = item.itemName
                             val stocksLeft = item.stocksLeft
                             val changed = historyList[itemName]?.sum() ?: 0
-                            val restocked = 0 // No restocking tracking in salesData
+                            val restocked = 0
                             val initialStocks = stocksLeft + changed + restocked
                             val forecastNeed = predictions.getOrDefault(itemName, 0)
                             val unitsToOrder = maxOf(0, forecastNeed - stocksLeft)
+
+                            Log.d("REPORT_DEBUG", "Processing item: $itemName | Initial: $initialStocks, Sold: $changed, Left: $stocksLeft, Forecast: $forecastNeed, To Order: $unitsToOrder")
 
                             table.addCell(itemName)
                             table.addCell(initialStocks.toString())
@@ -289,7 +305,12 @@ class GenerateReportsActivity : AppCompatActivity() {
                         }
 
                         document.add(table)
+
                         document.close()
+                        newDocument.close()
+                        templateDocument.close()
+                        pdfReader.close()
+                        pdfWriter.close()
 
                         Log.d("REPORT_DEBUG", "PDF successfully created at: ${file.absolutePath}")
                         Toast.makeText(context, "PDF Successfully Generated", Toast.LENGTH_SHORT).show()
