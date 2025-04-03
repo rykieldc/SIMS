@@ -699,9 +699,6 @@ class FirebaseDatabaseHelper {
             }
     }
 
-
-
-
     fun fetchItems(callback: (List<Item>) -> Unit) {
         itemsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {

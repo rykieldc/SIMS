@@ -26,93 +26,50 @@
 
     <GridLayout
         android:id="@+id/grid_layout"
-        android:layout_width="350dp"
-        android:layout_height="550dp"
-        android:layout_below="@id/header_dashboard"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/header_dashboard"
+        android:layout_marginTop="80dp"
+        android:rowCount="3"
         android:columnCount="2"
-        android:rowCount="2"
-        tools:ignore="TextSizeCheck">
+        android:layout_margin="24dp"
+        >
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cvViewItem"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_row="0"
-            android:layout_rowWeight="1"
-            android:layout_column="0"
-            android:layout_columnWeight="1"
-            android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardElevation="5dp"
             app:cardCornerRadius="15dp"
-            app:cardElevation="5dp">
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:layout_row="0"
+            android:layout_column="0"
+            android:layout_margin="12dp"
+            >
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
                 android:orientation="vertical"
+                android:gravity="center"
                 tools:ignore="UseCompoundDrawables">
 
                 <ImageView
-                    android:layout_width="120dp"
-                    android:layout_height="130dp"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
                     android:layout_gravity="center"
-                    android:layout_marginTop="20dp"
                     android:contentDescription="@string/view_items"
-                    android:src="@drawable/ic_view" />
+                    android:src="@drawable/ic_view"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
                     android:text="@string/view_items"
                     android:textColor="@color/red"
-                    android:textSize="25sp"
-                    android:textStyle="bold" />
-
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cvAddItem"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_row="0"
-            android:layout_rowWeight="1"
-            android:layout_column="1"
-            android:layout_columnWeight="1"
-            android:layout_margin="10dp"
-            app:cardCornerRadius="15dp"
-            app:cardElevation="5dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:contentDescription="@string/add_item"
-                android:orientation="vertical"
-                tools:ignore="UseCompoundDrawables">
-
-                <ImageView
-                    android:layout_width="120dp"
-                    android:layout_height="130dp"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="20dp"
-                    android:contentDescription="@string/add_item"
-                    android:src="@drawable/ic_add" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="@string/add_item"
-                    android:textColor="@color/red"
-                    android:textSize="25sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_gravity="center_horizontal"/>
 
 
             </LinearLayout>
@@ -121,39 +78,80 @@
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cvEditItem"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_row="1"
-            android:layout_rowWeight="1"
-            android:layout_column="0"
-            android:layout_columnWeight="1"
-            android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardElevation="5dp"
             app:cardCornerRadius="15dp"
-            app:cardElevation="5dp">
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:layout_row="0"
+            android:layout_column="1"
+            android:layout_margin="12dp"
+            >
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
                 android:orientation="vertical"
+                android:gravity="center"
                 tools:ignore="UseCompoundDrawables">
 
                 <ImageView
-                    android:layout_width="120dp"
-                    android:layout_height="130dp"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
                     android:layout_gravity="center"
-                    android:layout_marginTop="40dp"
                     android:contentDescription="@string/edit_item"
-                    android:src="@drawable/ic_edit" />
+                    android:src="@drawable/ic_edit"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
                     android:text="@string/edit_item"
                     android:textColor="@color/red"
-                    android:textSize="25sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_gravity="center_horizontal"/>
+
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvAddItem"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardElevation="5dp"
+            app:cardCornerRadius="15dp"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:layout_row="1"
+            android:layout_column="0"
+            android:layout_margin="12dp"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                tools:ignore="UseCompoundDrawables">
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/add_item"
+                    android:src="@drawable/ic_add"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/add_item"
+                    android:textColor="@color/red"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_gravity="center_horizontal"/>
 
 
             </LinearLayout>
@@ -162,46 +160,83 @@
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cvDeleteItem"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_row="1"
-            android:layout_rowWeight="1"
-            android:layout_column="1"
-            android:layout_columnWeight="1"
-            android:layout_margin="10dp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardElevation="5dp"
             app:cardCornerRadius="15dp"
-            app:cardElevation="5dp">
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:layout_row="1"
+            android:layout_column="1"
+            android:layout_margin="12dp"
+            >
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
                 android:orientation="vertical"
+                android:gravity="center"
                 tools:ignore="UseCompoundDrawables">
 
                 <ImageView
-                    android:layout_width="120dp"
-                    android:layout_height="130dp"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
                     android:layout_gravity="center"
-                    android:layout_marginTop="38dp"
                     android:contentDescription="@string/delete_item"
-                    android:src="@drawable/ic_delete" />
+                    android:src="@drawable/ic_delete"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
                     android:text="@string/delete_item"
                     android:textColor="@color/red"
-                    android:textSize="25sp"
-
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_gravity="center_horizontal"/>
 
 
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
 
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvGenerateReports"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardElevation="5dp"
+            app:cardCornerRadius="15dp"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:layout_row="2"
+            android:layout_column="0"
+            android:layout_margin="12dp"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                tools:ignore="UseCompoundDrawables">
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/generate_reports"
+                    android:src="@drawable/ic_report"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/generate_reports"
+                    android:textColor="@color/red"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_gravity="center_horizontal"/>
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
     </GridLayout>
 
 

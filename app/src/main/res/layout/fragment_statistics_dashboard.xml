@@ -62,7 +62,7 @@
                     android:fontFamily="@font/poppins_black"
                     android:text="@string/noOfItems"
                     android:textColor="@color/primary_color"
-                    android:textSize="32sp"
+                    android:textSize="50sp"
                     android:textStyle="bold"
                     android:gravity="center_horizontal"/>
 
@@ -107,7 +107,7 @@
                     android:fontFamily="@font/poppins_black"
                     android:text="@string/noOfAlerts"
                     android:textColor="@color/primary_color"
-                    android:textSize="32sp"
+                    android:textSize="50sp"
                     android:textStyle="bold"
                     android:gravity="center_horizontal"/>
 
@@ -154,7 +154,7 @@
                     android:fontFamily="@font/poppins_black"
                     android:text="@string/topSellingItem"
                     android:textColor="@color/primary_color"
-                    android:textSize="32sp"
+                    android:textSize="26sp"
                     android:textStyle="bold"
                     android:gravity="center_horizontal"/>
 

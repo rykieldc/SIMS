@@ -34,11 +34,13 @@ class UserDashboard : Fragment() {
         val editItemCardView = view.findViewById<CardView>(R.id.cvEditItem)
         val viewItemCardView = view.findViewById<CardView>(R.id.cvViewItem)
         val deleteItemCardView = view.findViewById<CardView>(R.id.cvDeleteItem)
+        val generateReportCardView = view.findViewById<CardView>(R.id.cvGenerateReports)
 
         addItemCardView.setOnClickListener { handleClick(AddItemActivity::class.java) }
         editItemCardView.setOnClickListener { handleClick(EditItemsActivityList::class.java) }
         viewItemCardView.setOnClickListener { startActivity(Intent(requireContext(), ViewItemsActivity::class.java)) }
         deleteItemCardView.setOnClickListener { handleClick(DeleteItemsActivityList::class.java) }
+        generateReportCardView.setOnClickListener { handleClick(GenerateReportsActivity::class.java) }
     }
 
     private fun handleClick(activityClass: Class<*>) {
