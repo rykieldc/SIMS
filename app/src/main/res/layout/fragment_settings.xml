@@ -73,6 +73,19 @@
                     android:gravity="center|center_vertical">
 
                     <Button
+                        android:id="@+id/profileBtn"
+                        android:layout_width="190dp"
+                        android:layout_height="60dp"
+                        android:backgroundTint="@color/profile_color"
+                        android:fontFamily="@font/poppins_black"
+                        android:textColor="@color/white"
+                        android:text="@string/profile"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"
+                        app:cornerRadius="10dp"
+                        tools:ignore="ButtonStyle,TextContrastCheck" />
+
+                    <Button
                         android:id="@+id/changePWBtn"
                         android:layout_width="190dp"
                         android:layout_height="60dp"

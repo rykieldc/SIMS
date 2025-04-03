@@ -76,12 +76,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupInitialFragment() {
-        val initialFragment = if (userRole == "Admin") {
-            AdminDashboard()
-        } else {
-            UserDashboard()
-        }
-        replaceFragment(initialFragment)
+        replaceFragment(StatisticsDashboard())
     }
 
     private fun setupBottomNavigation() {
@@ -93,6 +88,10 @@ class MainActivity : AppCompatActivity() {
 
             when (menuItem.itemId) {
                 R.id.dashboard -> {
+                    replaceFragment(StatisticsDashboard())
+                    true
+                }
+                R.id.inventory -> {
                     val dashboardFragment = if (userRole == "Admin") AdminDashboard() else UserDashboard()
                     replaceFragment(dashboardFragment)
                     true
@@ -101,10 +100,10 @@ class MainActivity : AppCompatActivity() {
                     replaceFragment(Notifications())
                     true
                 }
-                R.id.profile -> {
+                /*R.id.profile -> {
                     replaceFragment(ProfilePage())
                     true
-                }
+                }*/
                 R.id.settings -> {
                     replaceFragment(Settings())
                     true
@@ -114,7 +113,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun replaceFragment(fragment: Fragment) {
+    fun replaceFragment(fragment: Fragment) {
         if (!isFinishing && !supportFragmentManager.isDestroyed) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.frameLayout, fragment)

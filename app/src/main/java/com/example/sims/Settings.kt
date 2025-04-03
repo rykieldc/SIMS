@@ -24,6 +24,7 @@ class Settings : Fragment() {
 
         val changePasswordButton = binding.changePWBtn
         val logoutButton = binding.logoutBtn
+        val profileButton = binding.profileBtn
         val aboutButton = binding.aboutBtn
 
         userName = arguments?.getString("username")
@@ -37,6 +38,11 @@ class Settings : Fragment() {
         logoutButton.setOnClickListener {
             showLogoutConfirmationDialog()
         }
+
+        profileButton.setOnClickListener {
+            (activity as? MainActivity)?.replaceFragment(ProfilePage())
+        }
+
 
         aboutButton.setOnClickListener {
             val intent = Intent(requireActivity(), AboutPage::class.java)
