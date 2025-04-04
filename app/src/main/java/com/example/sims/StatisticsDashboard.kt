@@ -15,6 +15,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
@@ -51,6 +52,19 @@ class StatisticsDashboard : Fragment() {
         val noOfItemsTextView = view.findViewById<TextView>(R.id.noOfItems)
         val noOfAlertsTextView = view.findViewById<TextView>(R.id.noOfAlerts)
         val topSellingItemTextView = view.findViewById<TextView>(R.id.topSellingItem)
+
+        val cvItem = view.findViewById<CardView>(R.id.cvItem)
+        val cvAlert = view.findViewById<CardView>(R.id.cvAlert)
+
+        // Set OnClickListener for cvItem to open ViewItemsActivity
+        cvItem.setOnClickListener {
+            startActivity(Intent(requireContext(), ViewItemsActivity::class.java))
+        }
+
+        // Set OnClickListener for cvAlert to navigate to Notifications fragment
+        cvAlert.setOnClickListener {
+            (activity as? MainActivity)?.replaceFragment(Notifications())
+        }
 
         // Fetch enabled items and update the "noOfItems" TextView
         fetchItems { enabledItems ->
@@ -279,47 +293,70 @@ class StatisticsDashboard : Fragment() {
 
     private fun displayPieChart(locationCounts: Map<String, Int>) {
         val pieChart: PieChart = view?.findViewById(R.id.pieChart) ?: return
+        val legendLayout: LinearLayout = view?.findViewById(R.id.legendLayout) ?: return
         pieChart.description.isEnabled = false
 
-        val entries = locationCounts.map { PieEntry(it.value.toFloat(), it.key) }
+        // Filter out entries where the value is 0
+        val filteredEntries = locationCounts
+            .filter { it.value > 0 } // Remove entries with value 0
+            .map { PieEntry(it.value.toFloat(), it.key) }
 
-        val dataSet = PieDataSet(entries, "Locations").apply {
-            colors = listOf(
-                ContextCompat.getColor(requireContext(), R.color.Midnight_Green),
-                ContextCompat.getColor(requireContext(), R.color.Purple_Navy),
-                ContextCompat.getColor(requireContext(), R.color.Mulberry),
-                ContextCompat.getColor(requireContext(), R.color.Pastel_Red),
-                ContextCompat.getColor(requireContext(), R.color.Cheese)
-            )
+        if (filteredEntries.isEmpty()) {
+            pieChart.clear() // Clear the chart if no valid data
+            legendLayout.removeAllViews() // Clear legend as well
+            return
+        }
+
+        val colors = listOf(
+            ContextCompat.getColor(requireContext(), R.color.Midnight_Green),
+            ContextCompat.getColor(requireContext(), R.color.Purple_Navy),
+            ContextCompat.getColor(requireContext(), R.color.Mulberry),
+            ContextCompat.getColor(requireContext(), R.color.Pastel_Red),
+            ContextCompat.getColor(requireContext(), R.color.Cheese)
+        )
+
+        val dataSet = PieDataSet(filteredEntries, "").apply {
+            this.colors = colors
             valueTextSize = 16f
             valueTextColor = Color.WHITE
+            setDrawValues(true) // Ensure values are displayed only for non-zero entries
         }
 
         val pieData = PieData(dataSet)
-
-        pieChart.setDrawSliceText(false);
-
         pieChart.data = pieData
-
-        // 🎯 Center title
+        pieChart.setDrawSliceText(false)
         pieChart.centerText = "Stock Distribution"
         pieChart.setCenterTextSize(18f)
         pieChart.setCenterTextColor(Color.BLACK)
-
-        // ✅ Keep the legend outside
-        pieChart.legend.isEnabled = true
-
-        val legend = pieChart.legend
-        legend.isEnabled = true
-        legend.verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
-        legend.horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
-        legend.orientation = Legend.LegendOrientation.HORIZONTAL
-        legend.setDrawInside(false)
-        legend.isWordWrapEnabled = true  // ✅ This allows multi-line wrapping
-
+        pieChart.legend.isEnabled = false // Hide default legend
 
         pieChart.invalidate()
+
+        // Clear previous legend items
+        legendLayout.removeAllViews()
+
+        // Set legend layout to vertical for better readability
+        legendLayout.orientation = LinearLayout.VERTICAL
+
+        // Dynamically create custom legend items
+        locationCounts.keys.forEachIndexed { index, location ->
+            val legendItem = TextView(requireContext()).apply {
+                text = "⬤ $location"
+                textSize = 20f // Increase font size for better visibility
+                setTextColor(colors[index % colors.size])
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    setMargins(8, 8, 8, 8) // Add some margin for spacing
+                }
+            }
+            legendLayout.addView(legendItem)
+        }
     }
+
+
+
 
 
     override fun onResume() {
