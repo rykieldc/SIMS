@@ -3,8 +3,13 @@ package com.example.sims
 import SessionManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import com.github.mikephil.charting.charts.PieChart
+import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieData
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,8 +18,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.github.mikephil.charting.components.Legend
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -73,6 +81,10 @@ class StatisticsDashboard : Fragment() {
                 Log.d("STATISTICS_DEBUG", "No sales data found.")
                 topSellingItemTextView.text = "N/A"
             }
+        }
+
+        fetchItemsByLocation { locationCounts ->
+            displayPieChart(locationCounts)
         }
     }
 
@@ -210,6 +222,135 @@ class StatisticsDashboard : Fragment() {
             0
         }
     }
+
+    fun fetchItemsByLocation(callback: (Map<String, Int>) -> Unit) {
+        // Initialize counts for each location
+        var storeFrontCount = 0
+        var storeStockRoomCount = 0
+        var portaVagaStockRoomCount = 0
+        var ymcaStockRoomCount = 0
+        var homeCount = 0
+
+        val locations = listOf("Store Front", "Store Stock Room", "Porta Vaga Stock Room", "YMCA Stock Room", "Home")
+        val itemsRef = FirebaseDatabase.getInstance().getReference("items") // Your reference path
+
+        itemsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Iterate through the fetched items
+                for (itemSnapshot in snapshot.children) {
+                    val item = itemSnapshot.getValue(Item::class.java)
+
+                    if (item != null && item.enabled) {
+                        // Check if the item's location is one of the specified locations
+                        item.location?.let { location ->
+                            when (location) {
+                                "Store Front" -> storeFrontCount++
+                                "Store Stock Room" -> storeStockRoomCount++
+                                "Porta Vaga Stock Room" -> portaVagaStockRoomCount++
+                                "YMCA Stock Room" -> ymcaStockRoomCount++
+                                "Home" -> homeCount++
+                                else -> {
+                                    Log.w("FetchItemsByLocation", "Unknown location: $location")
+                                }
+                            }
+                        }
+                    } else {
+                        Log.e("FetchItemsByLocation", "Item is null or not enabled: $itemSnapshot")
+                    }
+                }
+
+                // Now return the counts
+                val locationCounts = mapOf(
+                    "Store Front" to storeFrontCount,
+                    "Store Stock Room" to storeStockRoomCount,
+                    "Porta Vaga Stock Room" to portaVagaStockRoomCount,
+                    "YMCA Stock Room" to ymcaStockRoomCount,
+                    "Home" to homeCount
+                )
+
+                callback(locationCounts)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FetchItemsByLocation", "Failed to fetch items: ${error.message}")
+            }
+        })
+    }
+
+    private fun displayPieChart(locationCounts: Map<String, Int>) {
+        val pieChart: PieChart = view?.findViewById(R.id.pieChart) ?: return
+        pieChart.description.isEnabled = false
+
+        val entries = locationCounts.map { PieEntry(it.value.toFloat(), it.key) }
+
+        val dataSet = PieDataSet(entries, "Locations").apply {
+            colors = listOf(
+                ContextCompat.getColor(requireContext(), R.color.Midnight_Green),
+                ContextCompat.getColor(requireContext(), R.color.Purple_Navy),
+                ContextCompat.getColor(requireContext(), R.color.Mulberry),
+                ContextCompat.getColor(requireContext(), R.color.Pastel_Red),
+                ContextCompat.getColor(requireContext(), R.color.Cheese)
+            )
+            valueTextSize = 16f
+            valueTextColor = Color.WHITE
+        }
+
+        val pieData = PieData(dataSet)
+
+        pieChart.setDrawSliceText(false);
+
+        pieChart.data = pieData
+
+        // 🎯 Center title
+        pieChart.centerText = "Stock Distribution"
+        pieChart.setCenterTextSize(18f)
+        pieChart.setCenterTextColor(Color.BLACK)
+
+        // ✅ Keep the legend outside
+        pieChart.legend.isEnabled = true
+
+        val legend = pieChart.legend
+        legend.isEnabled = true
+        legend.verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
+        legend.horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
+        legend.orientation = Legend.LegendOrientation.HORIZONTAL
+        legend.setDrawInside(false)
+        legend.isWordWrapEnabled = true  // ✅ This allows multi-line wrapping
+
+
+        pieChart.invalidate()
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+
+        val savedUsername = SessionManager.getUsername()
+        val usernameTextView = view?.findViewById<TextView>(R.id.header_dashboard)
+
+        if (!savedUsername.isNullOrEmpty()) {
+            val userDao = App.database.userDao()
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                val localUser = userDao.getUserByUsername(savedUsername)
+
+                withContext(Dispatchers.Main) {
+                    if (localUser != null) {
+                        val displayName = localUser.name
+                        usernameTextView?.text = "Hello, $displayName!"
+                    } else {
+                        FirebaseDatabaseHelper().checkUserData(savedUsername) { user ->
+                            val displayName = user.name
+                            usernameTextView?.text = "Hello, $displayName!"
+                        }
+                    }
+                }
+            }
+        } else {
+            usernameTextView?.text = "Hello, !"
+        }
+    }
+
 
 }
 

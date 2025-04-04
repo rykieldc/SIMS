@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:background="@drawable/bg_gradient" />
 
-    <!-- Header -->
+    <!-- Header
     <TextView
         android:id="@+id/header_dashboard"
         android:layout_width="match_parent"
@@ -22,13 +22,12 @@
         android:text="@string/greetings"
         android:textColor="@color/primary_color"
         android:textSize="32sp"
-        android:textStyle="bold" />
+        android:textStyle="bold" />-->
 
     <GridLayout
         android:id="@+id/grid_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/header_dashboard"
         android:layout_marginTop="80dp"
         android:rowCount="3"
         android:columnCount="2"

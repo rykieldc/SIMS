@@ -23,4 +23,9 @@
     <color name="low_stock_read">#20E5CB1E</color>
     <color name="critical_stock_unread">#55E51E1E</color>
     <color name="critical_stock_read">#20E51E1E</color>
+    <color name="Midnight_Green">#003F5C</color>
+    <color name="Purple_Navy">#58508D</color>
+    <color name="Mulberry">#BC5090</color>
+    <color name="Pastel_Red">#FF6361</color>
+    <color name="Cheese">#FFA600</color>
 </resources>
