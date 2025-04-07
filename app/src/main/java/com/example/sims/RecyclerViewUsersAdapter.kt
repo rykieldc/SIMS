@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -101,11 +102,20 @@ class RecyclerViewUsersAdapter(
 
         val editName = dialogView.findViewById<EditText>(R.id.editName)
         val editUsername = dialogView.findViewById<EditText>(R.id.editUsername)
-        val editRole = dialogView.findViewById<EditText>(R.id.UploadRole)
+        val editRole = dialogView.findViewById<Spinner>(R.id.UploadRole)
 
         editName.setText(user.name)
         editUsername.setText(user.username)
-        editRole.setText(user.role)
+
+        val roles = arrayOf("Admin", "User")
+        val adapter = android.widget.ArrayAdapter(getActivity, android.R.layout.simple_spinner_item, roles)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        editRole.adapter = adapter
+        
+        val roleIndex = roles.indexOf(user.role)
+        if (roleIndex >= 0) {
+            editRole.setSelection(roleIndex)
+        }
 
         val dialog = AlertDialog.Builder(getActivity)
             .setView(dialogView)
@@ -113,7 +123,15 @@ class RecyclerViewUsersAdapter(
             .create()
 
         dialogView.findViewById<Button>(R.id.saveBtn).setOnClickListener {
-            showSaveConfirmationDialog(user, editName.text.toString(), editUsername.text.toString(), editRole.text.toString(), dialog, position)
+            val selectedRole = editRole.selectedItem.toString()
+            showSaveConfirmationDialog(
+                user,
+                editName.text.toString(),
+                editUsername.text.toString(),
+                selectedRole,
+                dialog,
+                position
+            )
         }
 
         dialogView.findViewById<Button>(R.id.cancelBtn).setOnClickListener {
@@ -122,6 +140,7 @@ class RecyclerViewUsersAdapter(
 
         dialog.show()
     }
+
 
     private fun showSaveConfirmationDialog(user: User, updatedName: String, updatedUsername: String, updatedRole: String, dialog: AlertDialog, position: Int) {
         val dialogView = LayoutInflater.from(getActivity).inflate(R.layout.dialog_save_changes, null)

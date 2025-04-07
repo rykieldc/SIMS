@@ -82,6 +82,14 @@ class RecyclerEditProductAdapter(
         return filteredList.size
     }
 
+    fun filterByLocation(location: String): Int {
+        val filteredList = originalList.filter {
+            it.location.equals(location, ignoreCase = true)
+        }
+        updateList(filteredList)
+        return filteredList.size
+    }
+
 
     private fun updateList(newList: List<Product>) {
         val diffCallback = ProductDiffCallback(productList, newList)

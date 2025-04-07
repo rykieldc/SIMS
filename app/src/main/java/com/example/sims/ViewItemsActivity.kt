@@ -84,12 +84,19 @@ class ViewItemsActivity : AppCompatActivity() {
 
         val filterChoices = listOf(
             "None",
+            "--- Categories ---",
             "Syringes & Needles",
             "Dressings & Bandages",
             "Disinfectants & Antiseptics",
             "Personal Protective Equipment (PPE)",
             "Diagnostic Devices",
-            "Other Items"
+            "Other Items",
+            "--- Locations ---",
+            "Store Front",
+            "Store Stock Room",
+            "Porta Vaga Stock Room",
+            "YMCA Stock Room",
+            "Home"
         )
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, filterChoices)
@@ -155,21 +162,43 @@ class ViewItemsActivity : AppCompatActivity() {
         }
     }
 
-    private fun applyCategoryFilter(category: String) {
-        if (category == "None") {
-            recyclerViewProductAdapter?.resetList()
-            noProductsText.visibility = View.GONE
-        } else {
-            recyclerViewProductAdapter?.filterByCategory(category)
-            if (recyclerViewProductAdapter?.itemCount == 0) {
-                noProductsText.text = getString(R.string.no_products_found, category)
-                noProductsText.visibility = View.VISIBLE
-            } else {
+    private fun applyCategoryFilter(filter: String) {
+        when {
+            filter == "None" -> {
+                recyclerViewProductAdapter?.resetList()
                 noProductsText.visibility = View.GONE
+            }
+
+            filter == "--- Categories ---" || filter == "--- Locations ---" -> {
+                // Don't apply any filter
+                return
+            }
+
+            filter in listOf("Store Front",
+                "Store Stock Room",
+                "Porta Vaga Stock Room",
+                "YMCA Stock Room",
+                "Home") -> {
+                recyclerViewProductAdapter?.filterByLocation(filter)
+                if (recyclerViewProductAdapter?.itemCount == 0) {
+                    noProductsText.text = getString(R.string.no_products_found, filter)
+                    noProductsText.visibility = View.VISIBLE
+                } else {
+                    noProductsText.visibility = View.GONE
+                }
+            }
+
+            else -> {
+                recyclerViewProductAdapter?.filterByCategory(filter)
+                if (recyclerViewProductAdapter?.itemCount == 0) {
+                    noProductsText.text = getString(R.string.no_products_found, filter)
+                    noProductsText.visibility = View.VISIBLE
+                } else {
+                    noProductsText.visibility = View.GONE
+                }
             }
         }
     }
-
 
 
     override fun onResume() {
