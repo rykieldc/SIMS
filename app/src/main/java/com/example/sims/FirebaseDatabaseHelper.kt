@@ -975,7 +975,7 @@ class FirebaseDatabaseHelper {
             "Disinfectants & Antiseptics" -> "ANT"
             "Personal Protective Equipment (PPE)" -> "PPE"
             "Diagnostic Devices" -> "DGD"
-            else -> "OTH"
+            else -> "OTI"
         }
     }
 
