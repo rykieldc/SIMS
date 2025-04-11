@@ -55,6 +55,7 @@ class StatisticsDashboard : Fragment() {
 
         val cvItem = view.findViewById<CardView>(R.id.cvItem)
         val cvAlert = view.findViewById<CardView>(R.id.cvAlert)
+        val cvTop = view.findViewById<CardView>(R.id.cvTop)
 
         // Set OnClickListener for cvItem to open ViewItemsActivity
         cvItem.setOnClickListener {
@@ -64,6 +65,35 @@ class StatisticsDashboard : Fragment() {
         // Set OnClickListener for cvAlert to navigate to Notifications fragment
         cvAlert.setOnClickListener {
             (activity as? MainActivity)?.replaceFragment(Notifications())
+        }
+
+
+        var topItemName: String? = null
+
+        cvTop.setOnClickListener {
+            val name = topItemName
+            if (name != null) {
+                FirebaseDatabaseHelper().fetchItemByName(name, onSuccess = { item ->
+                    val intent = Intent(requireContext(), ViewItemDetailsActivity::class.java).apply {
+                        putExtra("productImg", item.imageUrl)
+                        putExtra("productName", item.itemName)
+                        putExtra("productSupplier", item.supplier)
+                        putExtra("productNum", item.stocksLeft)
+                        putExtra("productCode", item.itemCode)
+                        putExtra("productCategory", item.itemCategory)
+                        putExtra("productWeight", item.itemWeight)
+                        putExtra("productRack", item.rackNo)
+                        putExtra("productLocation", item.location)
+                        putExtra("dateAdded", item.dateAdded)
+                        putExtra("lastRestocked", item.lastRestocked)
+                    }
+                    startActivity(intent)
+                }, onFailure = {
+                    Toast.makeText(requireContext(), "Failed to fetch item details", Toast.LENGTH_SHORT).show()
+                })
+            } else {
+                Toast.makeText(requireContext(), "Top selling item not found", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // Fetch enabled items and update the "noOfItems" TextView
@@ -89,6 +119,7 @@ class StatisticsDashboard : Fragment() {
             val topSellingItem = itemSalesCount.maxByOrNull { it.value } // Find the item with the highest sales
             if (topSellingItem != null) {
                 val (itemName, salesCount) = topSellingItem
+                topItemName = itemName
                 Log.d("STATISTICS_DEBUG", "Top Selling Item: $itemName with $salesCount sales.")
                 topSellingItemTextView.text = "$itemName \n ($salesCount sold)"
             } else {

@@ -161,6 +161,24 @@
                     app:layout_constraintVertical_bias="0.541" />
 
                 <TextView
+                    android:id="@+id/descRack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="128dp"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:text="@string/rackNo"
+                    android:textAllCaps="true"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="@+id/uploadRack"
+                    app:layout_constraintEnd_toEndOf="@+id/descCode"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/itemDescription"
+                    app:layout_constraintVertical_bias="0.862" />
+
+                <TextView
                     android:id="@+id/descLocation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -288,7 +306,7 @@
                     android:textColorHint="#757575"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/descCategory"
-                    app:layout_constraintTop_toBottomOf="@+id/uploadWeight" />
+                    app:layout_constraintTop_toBottomOf="@+id/uploadRack" />
 
                 <EditText
                     android:id="@+id/uploadWeight"
@@ -308,6 +326,25 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/descWeight"
                     app:layout_constraintTop_toBottomOf="@+id/uploadCategory" />
+
+                <EditText
+                    android:id="@+id/uploadRack"
+                    android:layout_width="200dp"
+                    android:layout_height="50dp"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="4dp"
+                    android:autofillHints="productRack"
+                    android:background="@drawable/bg_fields"
+                    android:gravity="start|center_vertical"
+                    android:hint="@string/product_rack"
+                    android:inputType="number"
+                    android:maxWidth="400dp"
+                    android:padding="5dp"
+                    android:textColor="@color/black"
+                    android:textColorHint="#757575"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/descWeight"
+                    app:layout_constraintTop_toBottomOf="@+id/uploadWeight" />
 
                 <EditText
                     android:id="@+id/uploadSupplier"

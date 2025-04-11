@@ -62,7 +62,7 @@ class AddItemActivity : AppCompatActivity() {
     private lateinit var uploadLastRestocked: EditText
     private lateinit var productCodeEditText: EditText
     private lateinit var productNameEditText: EditText
-
+    private lateinit var uploadRack: EditText
     private lateinit var unitsEditText: EditText
     private lateinit var supplierEditText: EditText
     private lateinit var imageChooserLauncher: ActivityResultLauncher<Intent>
@@ -85,6 +85,7 @@ class AddItemActivity : AppCompatActivity() {
         uploadImg = findViewById(R.id.uploadImg)
         uploadDateAdded = findViewById(R.id.uploadDateAdded)
         uploadWeight = findViewById(R.id.uploadWeight)
+        uploadRack = findViewById(R.id.uploadRack)
         uploadLastRestocked = findViewById(R.id.uploadLastRestocked)
         productCodeEditText = findViewById(R.id.uploadCode)
         productNameEditText = findViewById(R.id.uploadName)
@@ -230,6 +231,11 @@ class AddItemActivity : AppCompatActivity() {
             return false
         }
 
+        if (uploadRack.text.isNullOrEmpty()) {
+            showToast("Please enter the Rack No.")
+            return false
+        }
+
         if (unitsEditText.text.isNullOrEmpty()) {
             showToast("Please enter the units.")
             return false
@@ -337,6 +343,7 @@ class AddItemActivity : AppCompatActivity() {
     private fun saveItemToDatabase(imageUrl: String) {
         val productName = productNameEditText.text.toString()
         val units = unitsEditText.text.toString().toIntOrNull()
+        val rack = uploadRack.text.toString().toIntOrNull()
         val weight = uploadWeight.text.toString().toFloatOrNull()
         val productCode = productCodeEditText.text.toString()
         val supplier = supplierEditText.text.toString()
@@ -347,37 +354,49 @@ class AddItemActivity : AppCompatActivity() {
         val dateAdded = uploadDateAdded.text.toString()
         val lastRestocked = uploadLastRestocked.text.toString()
 
-        firebaseDatabaseHelper.doesProductNameExist(productName) { exists ->
-            if (exists) {
-                showToast("Product name already exists.")
-                return@doesProductNameExist
+        if (rack == null) {
+            return
+        }
+
+        firebaseDatabaseHelper.doesRackNoExist(rack) { rackExists ->
+            if (rackExists) {
+                showToast("Rack No already in use.")
+                return@doesRackNoExist
             }
 
-            val item = Item(
-                itemCode = productCode,
-                itemName = productName,
-                itemCategory = selectedCategory,
-                itemWeight = (weight ?: 0).toFloat(),
-                location = selectedLocation,
-                supplier = supplier,
-                stocksLeft = units ?: 0,
-                dateAdded = dateAdded,
-                lastRestocked = lastRestocked,
-                imageUrl = imageUrl,
-                enabled = true
-            )
+            firebaseDatabaseHelper.doesProductNameExist(productName) { exists ->
+                if (exists) {
+                    showToast("Product name already exists.")
+                    return@doesProductNameExist
+                }
 
-            firebaseDatabaseHelper.saveItem(item) { success ->
+                val item = Item(
+                    itemCode = productCode,
+                    itemName = productName,
+                    itemCategory = selectedCategory,
+                    itemWeight = (weight ?: 0).toFloat(),
+                    rackNo = rack,
+                    location = selectedLocation,
+                    supplier = supplier,
+                    stocksLeft = units ?: 0,
+                    dateAdded = dateAdded,
+                    lastRestocked = lastRestocked,
+                    imageUrl = imageUrl,
+                    enabled = true
+                )
 
-                if (success) {
-                    showToast("Item saved successfully!")
-                    finish()
-                } else {
-                    showToast("Failed to save item.")
+                firebaseDatabaseHelper.saveItem(item) { success ->
+                    if (success) {
+                        showToast("Item saved successfully!")
+                        finish()
+                    } else {
+                        showToast("Failed to save item.")
+                    }
                 }
             }
         }
     }
+
 
     private fun showCancelConfirmationDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_cancel, null)

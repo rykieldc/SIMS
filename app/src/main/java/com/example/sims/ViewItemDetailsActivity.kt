@@ -31,6 +31,7 @@ class ViewItemDetailsActivity : AppCompatActivity() {
     private lateinit var itemName: TextView
     private lateinit var itemUnits: TextView
     private lateinit var itemWeight: TextView
+    private lateinit var rackNo: TextView
     private lateinit var itemCode: TextView
     private lateinit var itemCategory: TextView
     private lateinit var itemLocation: TextView
@@ -80,6 +81,7 @@ class ViewItemDetailsActivity : AppCompatActivity() {
         itemCode = findViewById(R.id.itemCode)
         itemCategory = findViewById(R.id.itemCategory)
         itemWeight = findViewById(R.id.itemWeight)
+        rackNo = findViewById(R.id.rackNo)
         itemLocation = findViewById(R.id.itemLocation)
         itemSupplier = findViewById(R.id.itemSupplier)
         itemDateAdded = findViewById(R.id.itemDateAdded)
@@ -140,6 +142,7 @@ class ViewItemDetailsActivity : AppCompatActivity() {
         itemName.text = updatedItem.itemName
         itemUnits.text = "${updatedItem.stocksLeft} units"
         itemWeight.text = "${updatedItem.itemWeight} g"
+        rackNo.text = "${updatedItem.rackNo}"
         itemCode.text = updatedItem.itemCode
         itemCategory.text = updatedItem.itemCategory
         itemLocation.text = updatedItem.location
@@ -159,6 +162,7 @@ class ViewItemDetailsActivity : AppCompatActivity() {
                 putExtra("productName", updatedItem.itemName)
                 putExtra("productNum", "${updatedItem.stocksLeft} unit(s)")
                 putExtra("productWeight", "${updatedItem.itemWeight} g")
+                putExtra("productRack", "${updatedItem.rackNo}")
                 putExtra("productCategory", updatedItem.itemCategory)
                 putExtra("productLocation", updatedItem.location)
                 putExtra("productSupplier", updatedItem.supplier)

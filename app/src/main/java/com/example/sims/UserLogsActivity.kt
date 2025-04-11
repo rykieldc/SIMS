@@ -130,6 +130,7 @@ class UserLogsActivity : AppCompatActivity() {
                         itemName = log.itemName,
                         itemCategory = log.itemCategory,
                         itemWeight = log.itemWeight,
+                        rackNo = log.rackNo,
                         location = log.location,
                         supplier = log.supplier,
                         stocksLeft = log.stocksLeft,

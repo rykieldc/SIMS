@@ -12,6 +12,7 @@ data class LocalItem(
     val itemName: String,
     val itemCategory: String,
     val itemWeight: Float,
+    val rackNo: Int,
     val location: String,
     val supplier: String,
     val stocksLeft: Int,

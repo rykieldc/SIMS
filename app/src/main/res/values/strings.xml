@@ -113,6 +113,8 @@
     <string name="are_you_sure_you_want_to_logout">Are you sure you want to logout?</string>
     <string name="sample_wt">1g</string>
     <string name="weight">Weight</string>
+    <string name="rackNo">Rack No.</string>
+    <string name="product_rack">#</string>
     <string name="product_weight">Product Weight</string>
     <string name="noOfItems">%1$s!</string>
     <string name="noOfAlerts">%1$s!</string>

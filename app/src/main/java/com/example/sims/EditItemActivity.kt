@@ -63,6 +63,7 @@ class EditItemActivity : AppCompatActivity() {
     private lateinit var editImg: ImageView
     private lateinit var editName: EditText
     private lateinit var editUnits: EditText
+    private lateinit var editRack: EditText
     private lateinit var editItemWeight: EditText
     private lateinit var editCode: EditText
     private lateinit var editCategory: EditText
@@ -95,6 +96,7 @@ class EditItemActivity : AppCompatActivity() {
         editImg = findViewById(R.id.editImg)
         editName = findViewById(R.id.editName)
         editUnits = findViewById(R.id.editUnits)
+        editRack = findViewById(R.id.editRackNo)
         editItemWeight = findViewById(R.id.editItemWeight)
         editCode = findViewById(R.id.editCode)
         editCategory = findViewById(R.id.editCategory)
@@ -175,6 +177,7 @@ class EditItemActivity : AppCompatActivity() {
         }
         editName.setText(intent.getStringExtra("productName"))
         editUnits.setText(intent.getStringExtra("productNum"))
+        editRack.setText(intent.getStringExtra("productRack"))
         editItemWeight.setText(intent.getStringExtra("productWeight"))
         editCode.setText(intent.getStringExtra("productCode"))
         editCategory.setText(intent.getStringExtra("productCategory"))
@@ -317,6 +320,11 @@ class EditItemActivity : AppCompatActivity() {
             return false
         }
 
+        if (editRack.text.isNullOrEmpty()) {
+            showToast("Please enter the Rack No.")
+            return false
+        }
+
         if (editSupplier.text.isNullOrEmpty()) {
             showToast("Please enter the supplier.")
             return false
@@ -431,6 +439,13 @@ class EditItemActivity : AppCompatActivity() {
             return
         }
 
+        val rackText = editRack.text.toString()
+        val rack = rackText.toIntOrNull()
+        if (rack == null) {
+            showToast("Please enter a valid number for rack no.")
+            return
+        }
+
         val productCode = editCode.text.toString()
         val productCategory = editCategory.text.toString()
         val supplier = editSupplier.text.toString()
@@ -445,43 +460,53 @@ class EditItemActivity : AppCompatActivity() {
             editLastRestocked.text.toString()
         }
 
-
         val currentProductName = intent.getStringExtra("productName") ?: ""
+        val currentRackNoString = intent.getStringExtra("productRack") ?: ""
+        val currentRackNo = currentRackNoString.toIntOrNull() ?: 0
 
-        firebaseDatabaseHelper.doesProductNameExistExcludingCurrent(productName, currentProductName) { exists ->
-            if (exists) {
-                showToast("Product name already exists. Please choose a different name.")
-                return@doesProductNameExistExcludingCurrent
+        firebaseDatabaseHelper.doesRackNoExistExcludingCurrent(rack, currentRackNo) { rackExists ->
+            if (rackExists) {
+                showToast("Rack number already in use.")
+                return@doesRackNoExistExcludingCurrent
             }
 
-            val item = Item(
-                itemCode = productCode,
-                itemName = productName,
-                itemCategory = productCategory,
-                itemWeight = (weight).toFloat(),
-                location = selectedLocation,
-                supplier = supplier,
-                stocksLeft = units,
-                dateAdded = dateAdded,
-                lastRestocked = lastRestocked,
-                imageUrl = imageUrl,
-                enabled = true
-            )
+            firebaseDatabaseHelper.doesProductNameExistExcludingCurrent(productName, currentProductName) { exists ->
+                if (exists) {
+                    showToast("Product name already exists. Please choose a different name.")
+                    return@doesProductNameExistExcludingCurrent
+                }
 
-            firebaseDatabaseHelper.updateItem(productCode, item) { success ->
-                if (success) {
-                    val resultIntent = Intent().apply {
-                        putExtra("updateStatus", true)
-                        putExtra("updatedItem", item)
+                val item = Item(
+                    itemCode = productCode,
+                    itemName = productName,
+                    itemCategory = productCategory,
+                    itemWeight = weight,
+                    rackNo = rack,
+                    location = selectedLocation,
+                    supplier = supplier,
+                    stocksLeft = units,
+                    dateAdded = dateAdded,
+                    lastRestocked = lastRestocked,
+                    imageUrl = imageUrl,
+                    enabled = true
+                )
+
+                firebaseDatabaseHelper.updateItem(productCode, item) { success ->
+                    if (success) {
+                        val resultIntent = Intent().apply {
+                            putExtra("updateStatus", true)
+                            putExtra("updatedItem", item)
+                        }
+                        setResult(Activity.RESULT_OK, resultIntent)
+                        finish()
+                    } else {
+                        showToast("Failed to update item.")
                     }
-                    setResult(Activity.RESULT_OK, resultIntent)
-                    finish()
-                } else {
-                    showToast("Failed to update item.")
                 }
             }
         }
     }
+
 
 
     private fun showCancelConfirmationDialog() {

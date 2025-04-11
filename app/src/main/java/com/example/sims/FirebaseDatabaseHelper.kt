@@ -46,6 +46,7 @@ data class History(
     val itemName: String? = null,
     val itemCategory: String? = null,
     val itemWeight: Float? = null,
+    val rackNo: Int? = null,
     val location: String? = null,
     val supplier: String? = null,
     val stocksLeft: Int? = null,
@@ -78,6 +79,7 @@ data class Item(
     var itemName: String = "",
     var itemCategory: String = "",
     var itemWeight: Float = 0.00f,
+    val rackNo: Int = 0,
     var location: String = "",
     var supplier: String = "",
     var stocksLeft: Int = 0,
@@ -91,6 +93,7 @@ data class Item(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readFloat(),
+        parcel.readInt(),
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readInt(),
@@ -105,6 +108,7 @@ data class Item(
         parcel.writeString(itemName)
         parcel.writeString(itemCategory)
         parcel.writeFloat(itemWeight)
+        parcel.writeInt(rackNo)
         parcel.writeString(location)
         parcel.writeString(supplier)
         parcel.writeInt(stocksLeft)
@@ -169,7 +173,7 @@ class FirebaseDatabaseHelper {
                         itemSnapshot.getValue(Item::class.java)?.let { item ->
                             itemsList.add(
                                 LocalItem(
-                                    item.itemCode, item.itemName, item.itemCategory, item.itemWeight,
+                                    item.itemCode, item.itemName, item.itemCategory, item.itemWeight, item.rackNo,
                                     item.location, item.supplier, item.stocksLeft, item.dateAdded,
                                     item.lastRestocked, item.enabled, item.imageUrl
                                 )
@@ -195,7 +199,7 @@ class FirebaseDatabaseHelper {
                     for (historySnapshot in snapshot.children) {
                         historySnapshot.getValue(History::class.java)?.let { history ->
                             historyList.add(LocalHistory(0, history.date, history.name, history.action, history.itemCode,
-                                history.itemName, history.itemCategory, history.itemWeight, history.location,
+                                history.itemName, history.itemCategory, history.itemWeight, history.rackNo, history.location,
                                 history.supplier, history.stocksLeft, history.dateAdded, history.lastRestocked,
                                 history.enabled, history.imageUrl, history.itemDetails, history.userName,
                                 history.userUsername, history.userRole))
@@ -569,6 +573,7 @@ class FirebaseDatabaseHelper {
             itemName = item.itemName,
             itemCategory = item.itemCategory,
             itemWeight = item.itemWeight,
+            rackNo = item.rackNo,
             location = item.location,
             supplier = item.supplier,
             stocksLeft = item.stocksLeft,
@@ -594,6 +599,7 @@ class FirebaseDatabaseHelper {
             itemName = item.itemName,
             itemCategory = item.itemCategory,
             itemWeight = item.itemWeight,
+            rackNo = item.rackNo,
             location = item.location,
             supplier = item.supplier,
             stocksLeft = item.stocksLeft,
@@ -766,6 +772,30 @@ class FirebaseDatabaseHelper {
             })
     }
 
+    fun fetchItemByName(itemName: String, onSuccess: (Item) -> Unit, onFailure: (String) -> Unit) {
+        val dbRef = FirebaseDatabase.getInstance().getReference("items")
+        dbRef.orderByChild("itemName").equalTo(itemName)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        for (child in snapshot.children) {
+                            val item = child.getValue(Item::class.java)
+                            if (item != null) {
+                                onSuccess(item)
+                                return
+                            }
+                        }
+                    }
+                    onFailure("Item not found.")
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    onFailure(error.message)
+                }
+            })
+    }
+
+
 
     fun saveItem(item: Item, callback: (Boolean) -> Unit) {
         val itemCode = item.itemCode
@@ -797,6 +827,9 @@ class FirebaseDatabaseHelper {
                 }
                 if (existingItem.itemWeight != item.itemWeight) {
                     itemDetails.append("Updated Item Weight from [${existingItem.itemWeight}] to [${item.itemWeight}]. ")
+                }
+                if (existingItem.rackNo != item.rackNo) {
+                    itemDetails.append("Updated Rack No. from [${existingItem.itemCategory}] to [${item.itemCategory}]. ")
                 }
                 if (existingItem.location != item.location) {
                     itemDetails.append("Updated Location from [${existingItem.location}] to [${item.location}]. ")
@@ -922,6 +955,44 @@ class FirebaseDatabaseHelper {
 
     fun doesProductNameExist(productName: String, callback: (Boolean) -> Unit) {
         databaseReference.orderByChild("itemName").equalTo(productName).addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val exists = snapshot.children.any { it.child("enabled").getValue(Boolean::class.java) == true }
+                callback(exists)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                callback(false)
+            }
+        })
+    }
+
+    fun doesRackNoExistExcludingCurrent(
+        rackNo: Int,
+        currentRackNo: Int,
+        callback: (Boolean) -> Unit
+    ) {
+        databaseReference.orderByChild("rackNo").equalTo(rackNo.toDouble())
+            .addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val exists = snapshot.children.any {
+                    it.child("enabled").getValue(Boolean::class.java) == true &&
+                            it.child("rackNo").getValue(Int::class.java) != currentRackNo
+                }
+                callback(exists)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                callback(false)
+            }
+        })
+    }
+
+
+
+    fun doesRackNoExist(rackNo: Int, callback: (Boolean) -> Unit) {
+        databaseReference.orderByChild("rackNo").equalTo(rackNo.toDouble()).addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val exists = snapshot.children.any { it.child("enabled").getValue(Boolean::class.java) == true }
