@@ -78,13 +78,16 @@ class GenerateReportsActivity : AppCompatActivity() {
         setupSpinners()
 
         generateMonthlyReportButton.setOnClickListener {
-            val selectedMonth = monthSpinner.selectedItem.toString().substring(0, 2) // Extract MM format
-            val selectedYear = yearSpinner.selectedItem.toString() // Extract YYYY format
+            generateMonthlyReportButton.isEnabled = false
+
+            val selectedMonth = monthSpinner.selectedItem.toString().substring(0, 2)
+            val selectedYear = yearSpinner.selectedItem.toString()
 
             Log.d("REPORT_DEBUG", "Generating report for Month: $selectedMonth, Year: $selectedYear")
 
-            generateMonthlyReport(this, selectedMonth, selectedYear)
+            generateMonthlyReport(this, selectedMonth, selectedYear, generateMonthlyReportButton)
         }
+
     }
 
     class DrawableClickSpan(private val clickListener: () -> Unit) : ClickableSpan() {
@@ -216,7 +219,7 @@ class GenerateReportsActivity : AppCompatActivity() {
         }
     }
 
-    private fun generateMonthlyReport(context: Context, selectedMonth: String, selectedYear: String) {
+    private fun generateMonthlyReport(context: Context, selectedMonth: String, selectedYear: String, button: Button) {
         Log.d("REPORT_DEBUG", "generateMonthlyReport called for Month: $selectedMonth, Year: $selectedYear")
 
         databaseHelper.fetchItems { itemList ->
@@ -238,6 +241,7 @@ class GenerateReportsActivity : AppCompatActivity() {
                     if (predictions == null) {
                         Log.e("REPORT_DEBUG", "Prediction fetch returned null.")
                         Toast.makeText(context, "Failed to fetch predictions", Toast.LENGTH_SHORT).show()
+                        button.isEnabled = true
                         return@fetchPrediction
                     }
 
@@ -314,6 +318,7 @@ class GenerateReportsActivity : AppCompatActivity() {
 
                         Log.d("REPORT_DEBUG", "PDF successfully created at: ${file.absolutePath}")
                         Toast.makeText(context, "PDF Successfully Generated", Toast.LENGTH_SHORT).show()
+                        button.isEnabled = true
 
                         val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
                         val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -321,10 +326,13 @@ class GenerateReportsActivity : AppCompatActivity() {
                             flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
                         }
                         context.startActivity(intent)
+                        generateMonthlyReportButton.isEnabled = true
 
                     } catch (e: Exception) {
+                        generateMonthlyReportButton.isEnabled = true
                         Log.e("REPORT_DEBUG", "Error generating PDF: ${e.message}")
                         Toast.makeText(context, "Error generating report", Toast.LENGTH_SHORT).show()
+                        button.isEnabled = true
                     }
                 }
             }
